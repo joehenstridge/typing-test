@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typing Test for Kids</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="description" content="A free, friendly typing test for children and young people. Pick a level and a time, type the passage and see your speed, accuracy and the keys to practise.">
+<meta property="og:title" content="Typing Test for Kids">
+<meta property="og:description" content="Practise typing with fun passages, three levels and a results breakdown.">
+<meta name="theme-color" content="#2f5bea">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:'Archivo';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/archivo-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Archivo';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/archivo-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Archivo';font-weight:800;font-style:normal;font-display:swap;src:url(fonts/archivo-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/jetbrains-mono-latin-600-normal.woff2) format('woff2')}
+/* VOICE: focused, quiet, a tool that gets out of the way until the result lands.
+   IDEA: a keyboard and its keycaps — settings are keycaps, missed keys come back as keycaps.
+   PICTURE: the passage itself, large, at the top; afterwards the speed chart.
+   COLOUR and TYPE: white / charcoal ground, keycap grey, cobalt caret, tomato errors. Archivo + JetBrains Mono.
+   LAYOUT: one column up to 1000px; settings row, passage, then results band. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#15161a);--ink:light-dark(#1b1c20,#ecebe8);--dim:light-dark(#a4a29d,#62646c);
+--cap:light-dark(#ecebe7,#24262c);--cap2:light-dark(#d9d7d1,#33363e);--line:light-dark(#e2e0db,#2c2e35);
+--acc:light-dark(#2f5bea,#6f8fff);--bad:light-dark(#d9372b,#ff6b5c);--good:light-dark(#1f8a4c,#4fd08a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Archivo,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(20px,4vw,48px) max(5vw,16px)}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px;margin-bottom:22px}
+h1{font-size:32px;line-height:1.05;margin:0;font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--acc)}
+.hint{color:var(--dim);font-size:14px;margin:0}
+kbd{font:600 12px 'JetBrains Mono',monospace;background:var(--cap);border:1px solid var(--cap2);border-bottom-width:3px;border-radius:6px;padding:1px 6px;color:var(--ink)}
+.settings{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;background:var(--cap);border-radius:14px;padding:14px 16px;margin-bottom:26px}
+.grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.grp>b{font-size:13px;font-weight:600;color:var(--dim);margin-right:4px}
+.chip{font:600 14px Archivo,sans-serif;min-height:40px;min-width:44px;padding:0 12px;border-radius:9px;border:1px solid var(--cap2);border-bottom-width:3px;background:var(--bg);color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);border-color:color-mix(in srgb,var(--acc) 70%,#000);color:#fff}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.num{width:76px;min-height:40px;font:16px 'JetBrains Mono',monospace;padding:0 8px;border-radius:9px;border:1px solid var(--cap2);background:var(--bg);color:var(--ink)}
+input[type=range]{width:140px;accent-color:var(--acc)}
+.sizev{font:600 13px 'JetBrains Mono',monospace;color:var(--dim);width:42px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;min-height:44px}
+.timer{font:600 clamp(28px,5vw,40px)/1 'JetBrains Mono',monospace;color:var(--acc)}
+.live{font:600 15px 'JetBrains Mono',monospace;color:var(--dim)}
+.btn{font:600 15px Archivo,sans-serif;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--cap2);border-bottom-width:3px;background:var(--cap);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--acc);color:#fff;border-color:color-mix(in srgb,var(--acc) 70%,#000)}
+#stage{position:relative;cursor:text;--fs:28px;font:var(--fs)/1.6 'JetBrains Mono',monospace;height:calc(var(--fs)*1.6*3);overflow:hidden}
+#words{position:relative;transition:transform .15s ease;color:var(--dim);word-break:keep-all}
+.w{display:inline-block;margin-right:.6em;white-space:nowrap;vertical-align:top}
+.w.err{box-shadow:inset 0 -2px color-mix(in srgb,var(--bad) 60%,transparent)}
+.l.ok{color:var(--ink)}.l.bad{color:var(--bad)}.l.extra{color:color-mix(in srgb,var(--bad) 65%,var(--dim))}
+#caret{position:absolute;width:2px;background:var(--acc);border-radius:2px;transition:left .08s,top .08s;animation:blink 1s step-end infinite}
+#caret.typing{animation:none}
+@keyframes blink{50%{opacity:0}}
+#blur{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font:600 16px Archivo,sans-serif;color:var(--ink);backdrop-filter:blur(5px);background:color-mix(in srgb,var(--bg) 40%,transparent)}
+#stage.unfocused #blur{display:flex}
+#inp{position:absolute;opacity:0;left:0;top:0;width:1px;height:1px;font-size:16px}
+#results{display:none;margin-top:6px}
+.top{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:24px;align-items:stretch}
+.cheer{font:800 clamp(24px,4vw,34px)/1.15 Archivo,sans-serif;margin:0 0 18px;text-wrap:balance}.cheer span{color:#f5a400;letter-spacing:.08em}
+.big b{display:block;font:800 clamp(64px,11vw,104px)/1 Archivo,sans-serif;letter-spacing:-.04em;color:var(--acc)}
+.big small,.k small{font-size:13px;color:var(--dim);font-weight:600}
+.big .acc b{font-size:clamp(40px,6vw,56px);color:var(--ink)}
+.big>div{margin-bottom:14px}
+.fig{position:relative;min-height:240px;background:var(--cap);border-radius:14px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--dim);margin:8px 0 0}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:22px 0}
+.k{background:var(--cap);border-radius:12px;padding:12px 14px}
+.k b{display:block;font:600 24px 'JetBrains Mono',monospace;white-space:nowrap}
+h2{font-size:20px;margin:26px 0 10px}
+.chars{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--cap)}
+.chars span{height:100%}
+.charkey{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin-top:8px}
+.charkey i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.caps{display:flex;flex-wrap:wrap;gap:10px}
+.keycap{width:62px;height:62px;border-radius:10px;background:var(--cap);border:1px solid var(--cap2);border-bottom-width:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 22px 'JetBrains Mono',monospace}
+.keycap small{font:600 12px Archivo,sans-serif;color:var(--bad)}
+.empty{color:var(--dim);font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--dim);font-weight:600}
+th:first-child,td:first-child{text-align:left}
+td.pb{color:var(--acc);font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+footer{margin-top:40px;color:var(--dim);font-size:13px}
+.scroll{overflow-x:auto}
+@media(max-width:600px){.top{grid-template-columns:minmax(0,1fr)}.big{display:flex;gap:26px;flex-wrap:wrap}.settings{gap:12px}}
+@media(prefers-reduced-motion:reduce){#words,#caret{transition:none}#caret{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Typing <span>test</span></h1>
+  <p class="hint">Pick a level, then start typing to begin · <kbd>Tab</kbd> or <kbd>Esc</kbd> to restart</p>
+</header>
+
+<div class="settings" id="settings">
+  <div class="grp" role="group" aria-label="Level"><b>Level</b>
+    <button class="chip" data-level="starter">Starter</button>
+    <button class="chip" data-level="explorer">Explorer</button>
+    <button class="chip" data-level="challenge">Challenge</button>
+  </div>
+  <div class="grp" role="group" aria-label="Duration"><b>Time</b>
+    <button class="chip" data-dur="15">15s</button>
+    <button class="chip" data-dur="30">30s</button>
+    <button class="chip" data-dur="60">60s</button>
+    <button class="chip" data-dur="120">2m</button>
+    <input class="num" id="customDur" type="number" min="5" max="600" step="5" placeholder="sec" aria-label="Custom duration in seconds">
+  </div>
+  <div class="grp"><b>Text size</b>
+    <input type="range" id="size" min="16" max="52" step="2" aria-label="Text size">
+    <span class="sizev" id="sizev"></span>
+  </div>
+  <div class="grp" role="group" aria-label="Text options"><b>Include</b>
+    <button class="chip" id="optPunct">Punctuation &amp; capitals</button>
+    <button class="chip" id="optNum">Numbers</button>
+  </div>
+</div>
+
+<section id="test">
+  <div class="bar">
+    <span class="timer" id="timer">60</span>
+    <span class="live" id="live"></span>
+    <button class="btn" id="restart">Restart</button>
+  </div>
+  <div id="stage" class="unfocused">
+    <div id="words"></div>
+    <input id="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type here">
+    <div id="blur">Click here or press any key to focus</div>
+  </div>
+</section>
+
+<section id="results" aria-live="polite">
+  <p class="cheer" id="cheer"></p>
+  <div class="top">
+    <div class="big">
+      <div><b id="rWpm">0</b><small>words per minute</small></div>
+      <div class="acc"><b id="rAcc">0%</b><small>accuracy</small></div>
+    </div>
+    <div>
+      <div class="fig"><svg id="chart" role="img" aria-label="Speed over time"></svg></div>
+      <div class="legend"><span><i style="background:var(--acc)"></i>WPM (running)</span><span><i style="background:var(--dim)"></i>Raw per second</span><span><i style="background:var(--bad);height:8px;width:8px;border-radius:50%"></i>Errors</span></div>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+
+  <h2>Character breakdown</h2>
+  <div class="chars" id="charBar"></div>
+  <div class="charkey" id="charKey"></div>
+
+  <h2>Keys to practise</h2>
+  <div class="caps" id="caps"></div>
+
+  <h2>Recent tests</h2>
+  <div class="scroll"><table id="hist"></table></div>
+
+  <div class="actions">
+    <button class="btn pri" id="next">Next test</button>
+    <button class="btn" id="repeat">Repeat this text</button>
+    <button class="btn" id="copy">Copy result</button>
+  </div>
+</section>
+
+<footer>Words per minute counts only words typed fully correctly, at five letters per word. Raw counts every key pressed. Scores are saved only in this browser and never leave this device. · v4</footer>
+</div>
+
+<script>
+{
+const PASSAGES={"starter": ["The cat sat on the mat. It was a warm day and the sun was out. The cat had a nap in the sun.", "I like to run and jump in the park. My dog likes to run too. We run up the hill and then we sit down.", "We went to the beach. I made a big sand castle with a red flag on top. Then the sea came in and took it away.", "My frog is green and he can jump very high. He likes to sit on a rock by the pond and wait for a fly.", "It is time for bed. I put on my socks and get into bed with my bear. Mum reads me a book and then I go to sleep.", "The bus is big and red. It stops at the end of my road. I get on with my bag and sit at the back with my friend.", "I can see a bird in the tree. It has a red chest and a small brown back. It sings a song and then it flies away.", "We made a cake for Gran. We put in eggs, milk and jam. It was a bit flat, but Gran said it was the best cake ever.", "I have 2 cats and 1 dog. The dog has 4 legs and a long tail. The cats like to sleep for 10 hours a day.", "There are 5 ducks on the pond. 3 of them are brown and 2 are white. We give them some seeds to eat."], "explorer": ["Penguins cannot fly, but they are amazing swimmers. They use their wings like flippers to zoom through the cold water, chasing fish and diving deep below the ice.", "On Saturday we built a den in the woods. We used long sticks for the walls and covered them with leaves. It was so good that we stayed inside until it started to rain.", "The moon does not make its own light. It shines because the sun lights it up, just like a torch shining on a ball in a dark room.", "My little brother wants to be an astronaut. He has a cardboard rocket in his bedroom and counts down from ten every night before he goes to sleep.", "Bees are very busy insects. They visit flowers to collect nectar, which they turn into honey. Along the way, they help plants to grow by carrying pollen from flower to flower.", "When it snowed last winter, the whole school went outside. We built a snowman with a carrot nose and a scarf, and our teacher joined in the snowball fight.", "Dinosaurs lived on Earth for millions of years. Some were as small as chickens, while others were taller than a house. We learn about them by studying fossils found in rocks.", "Every autumn, the leaves on the big oak tree turn orange and gold. We collect the best ones on the way home and press them inside a heavy book to keep them flat.", "A blue whale can grow to around 30 metres long, which is longer than 2 buses. Its heart is about the size of a small car.", "Our class has 28 children. On sports day, 14 of us ran the relay race and we finished in 2nd place, only 3 seconds behind the winners."], "challenge": ["Volcanoes form where hot, melted rock called magma pushes up through cracks in the Earth's crust. When the pressure becomes too great, the volcano erupts, sending lava, ash and gas high into the sky.", "Ancient Egyptians built enormous pyramids as tombs for their kings, known as pharaohs. Nobody is completely sure how they moved such heavy stones, but historians believe ramps, ropes and thousands of workers were involved.", "Typing quickly is useful, but typing accurately is even more important. Keep your fingers resting on the home keys, look at the screen rather than the keyboard, and let your speed grow naturally with practice.", "Octopuses are remarkably clever creatures. They can open jars, squeeze through tiny gaps and change the colour of their skin in an instant to hide from predators lurking nearby.", "Did you know that a rainbow appears when sunlight shines through raindrops? Each drop bends the light and splits it into seven colours: red, orange, yellow, green, blue, indigo and violet.", "Computers follow instructions called programs. A program is written in a special language that tells the computer exactly what to do, step by step. Even the most exciting games began as lines of carefully typed code.", "Rainforests cover only a small part of our planet, yet they are home to more than half of the world's plants and animals. Protecting them helps keep the air clean and the climate healthy.", "Our solar system has 8 planets. Jupiter is the largest; you could fit more than 1,300 Earths inside it. Mercury, the smallest, travels around the Sun in just 88 days.", "Light travels at roughly 300,000 kilometres per second. Even so, sunlight takes about 8 minutes to reach us, because the Sun is nearly 150 million kilometres away."]};
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const cfg=Object.assign({dur:60,size:32,punct:true,num:false,level:"starter"},store.get("tt-kids-cfg",{}));
+if(!PASSAGES[cfg.level])cfg.level="starter";
+let words=[],typed=[],wi=0,running=false,done=false,t0=0,tick=null,secs=[],secKeys=0,secErr=0,keysOk=0,keysBad=0,missed={},lastWords=null;
+const stage=$("stage"),box=$("words"),inp=$("inp");
+const caret=document.createElement("div");caret.id="caret";
+
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+let pool=[];
+function nextPassage(){
+  if(!pool.length){pool=PASSAGES[cfg.level].filter(p=>cfg.num||!/\d/.test(p));for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}}
+  let p=pool.pop();
+  if(!cfg.punct)p=p.toLowerCase().replace(/[^a-z0-9' ]/g,"").replace(/'/g,"");
+  return p.split(/\s+/).filter(Boolean);
+}
+function gen(n){const out=[];while(out.length<n)out.push(...nextPassage());return out}
+function wordHTML(i){
+  const t=words[i],y=typed[i]||"";let h="";
+  for(let j=0;j<Math.max(t.length,y.length);j++){
+    if(j<y.length)h+=`<span class="l ${j>=t.length?"extra":y[j]===t[j]?"ok":"bad"}">${esc(j>=t.length?y[j]:t[j])}</span>`;
+    else h+=`<span class="l">${esc(t[j])}</span>`;
+  }
+  return h;
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderAll(){
+  box.innerHTML=words.map((w,i)=>`<span class="w" data-i="${i}">${wordHTML(i)}</span>`).join("");
+  box.appendChild(caret);place();
+}
+function renderWord(i){
+  const el=box.children[i];if(!el)return;
+  el.innerHTML=wordHTML(i);
+  el.classList.toggle("err",i<wi&&typed[i]!==words[i]);
+}
+function append(n){
+  const start=words.length,more=gen(n);
+  words.push(...more);
+  const frag=document.createElement("div");
+  frag.innerHTML=more.map((w,k)=>`<span class="w" data-i="${start+k}">${wordHTML(start+k)}</span>`).join("");
+  while(frag.firstChild)box.insertBefore(frag.firstChild,caret);
+}
+function place(){
+  const el=box.children[wi];if(!el)return;
+  const letters=el.children,n=(typed[wi]||"").length,fs=parseFloat(getComputedStyle(stage).fontSize),lh=fs*1.6;
+  let x;
+  const r0=box.getBoundingClientRect(),re=el.getBoundingClientRect(),y=re.top-r0.top;
+  if(n<letters.length)x=letters[n].getBoundingClientRect().left-r0.left;
+  else x=re.left-r0.left+(letters.length?letters[letters.length-1].getBoundingClientRect().right-re.left:0);
+  caret.style.left=x+"px";caret.style.top=(y+lh*.18)+"px";caret.style.height=(lh*.64)+"px";
+  let prevTop=null;
+  for(let i=wi-1;i>=0;i--){const t=box.children[i].offsetTop;if(t<el.offsetTop){prevTop=t;break}}
+  box.style.transform=`translateY(${-(prevTop===null?0:prevTop)}px)`;
+}
+function reset(same){
+  clearInterval(tick);running=false;done=false;
+  if(!same)pool=[];
+  words=same&&lastWords?lastWords.slice():gen(120);
+  typed=[""];wi=0;secs=[];secKeys=secErr=keysOk=keysBad=0;missed={};
+  inp.value="";$("timer").textContent=fmt(cfg.dur);$("live").textContent="";
+  $("results").style.display="none";$("test").style.display="";
+  caret.classList.remove("typing");
+  renderAll();focus();
+}
+function fmt(s){s=Math.max(0,Math.ceil(s));return s>=60?Math.floor(s/60)+":"+String(s%60).padStart(2,"0"):String(s)}
+function focus(){inp.focus({preventScroll:true})}
+function start(){
+  running=true;lastWords=words.slice();t0=performance.now();caret.classList.add("typing");
+  tick=setInterval(()=>{
+    const el=(performance.now()-t0)/1000;
+    if(Math.floor(el)>secs.length){
+      const t=secs.length+1;
+      secs.push({t,wpm:netChars()/5/(t/60),raw:secKeys*12,err:secErr});secKeys=secErr=0;
+      $("live").textContent=Math.round(secs[secs.length-1].wpm)+" wpm";
+    }
+    $("timer").textContent=fmt(cfg.dur-el);
+    if(el>=cfg.dur)finish();
+  },100);
+}
+function netChars(){
+  let c=0;
+  for(let i=0;i<wi;i++)if(typed[i]===words[i])c+=words[i].length+1;
+  const y=typed[wi]||"";if(y&&words[wi].startsWith(y))c+=y.length;
+  return c;
+}
+function key(c){
+  if(!running)start();
+  const t=words[wi],y=typed[wi];
+  if(c===" "){
+    if(y==="")return;
+    const ok=y===t;ok?keysOk++:(keysBad++,secErr++);secKeys++;
+    if(!ok&&y.length<t.length)missed[t[y.length]]=(missed[t[y.length]]||0)+1;
+    wi++;typed[wi]="";renderWord(wi-1);
+    if(words.length-wi<40)append(60);
+    return;
+  }
+  const ok=c===t[y.length];secKeys++;
+  if(ok)keysOk++;else{keysBad++;secErr++;const e=y.length<t.length?t[y.length]:"extra";if(e!=="extra")missed[e]=(missed[e]||0)+1}
+  typed[wi]=y+c;
+}
+inp.addEventListener("input",()=>{
+  if(done){inp.value="";return}
+  const v=inp.value,prev=typed[wi];
+  if(v.length>prev.length&&v.startsWith(prev)){for(const c of v.slice(prev.length))key(c)}
+  else typed[wi]=v.replace(/\s/g,"");
+  inp.value=typed[wi];renderWord(wi);place();
+});
+inp.addEventListener("keydown",e=>{
+  if(e.key==="Backspace"&&inp.value===""&&wi>0&&typed[wi-1]!==words[wi-1]&&!done){
+    e.preventDefault();typed.pop();wi--;inp.value=typed[wi];renderWord(wi);renderWord(wi+1);place();
+  }
+});
+inp.addEventListener("focus",()=>stage.classList.remove("unfocused"));
+inp.addEventListener("blur",()=>stage.classList.add("unfocused"));
+stage.addEventListener("click",focus);
+document.addEventListener("keydown",e=>{
+  const a=document.activeElement;
+  if(e.key==="Escape"||(e.key==="Tab"&&(a===inp||done))){e.preventDefault();reset(false);return}
+  if(a!==inp&&!(a&&a.matches("input,button"))&&e.key.length===1&&!done&&!e.ctrlKey&&!e.metaKey)focus();
+});
+
+function finish(){
+  clearInterval(tick);running=false;done=true;inp.blur();
+  const mins=cfg.dur/60;
+  let cOk=0,cBad=0,cExtra=0,cMiss=0;
+  for(let i=0;i<=wi;i++){
+    const t=words[i],y=typed[i]||"";
+    for(let j=0;j<y.length;j++){if(j>=t.length)cExtra++;else if(y[j]===t[j])cOk++;else cBad++}
+    if(i<wi&&y.length<t.length)cMiss+=t.length-y.length;
+  }
+  const totalTyped=keysOk+keysBad,net=netChars()/5/mins,raw=totalTyped/5/mins;
+  const acc=totalTyped?keysOk/totalTyped*100:0;
+  const raws=secs.map(s=>s.raw),mean=raws.reduce((a,b)=>a+b,0)/(raws.length||1);
+  const sd=Math.sqrt(raws.reduce((a,b)=>a+(b-mean)**2,0)/(raws.length||1));
+  const cons=mean?Math.max(0,100-sd/mean*100):0;
+  const wordsOk=typed.slice(0,wi).filter((y,i)=>y===words[i]).length;
+  const r={date:Date.now(),dur:cfg.dur,wpm:Math.round(net),raw:Math.round(raw),acc:Math.round(acc*10)/10,cons:Math.round(cons)};
+  const hist=store.get("tt-kids-hist",[]);const pbPrev=Math.max(0,...hist.filter(h=>h.dur===cfg.dur&&h.level===cfg.level).map(h=>h.wpm));
+  hist.unshift(r);store.set("tt-kids-hist",hist.slice(0,20));
+  const stars=(r.acc>=95?1:0)+(r.acc>=85?1:0)+(r.wpm>=({starter:10,explorer:20,challenge:30}[cfg.level])?1:0);
+  const isPb=r.wpm>pbPrev&&hist.length>1;
+  const msg=isPb?"New personal best! Brilliant typing.":r.acc>=95?"Super accurate, well done!":r.acc>=85?"Great work, keep practising!":"Good try! Slow down a little and aim for fewer mistakes.";
+  $("cheer").innerHTML=`<span aria-label="${stars} out of 3 stars">${"★".repeat(stars)}${"☆".repeat(3-stars)}</span> ${msg}`;
+  r.level=cfg.level;hist[0].level=cfg.level;store.set("tt-kids-hist",hist.slice(0,20));
+  $("rWpm").textContent=r.wpm;$("rAcc").textContent=r.acc+"%";
+  const kp=[["Raw WPM",r.raw],["Consistency",r.cons+"%"],["Words correct",wordsOk+" / "+wi],["Keystrokes",totalTyped],["Test length",fmt(cfg.dur)+(cfg.dur<60?"s":"")],["Your best here",Math.max(pbPrev,r.wpm)]];
+  $("kpis").innerHTML=kp.map(([l,v])=>`<div class="k"><small>${l}</small><b>${esc(String(v))}</b></div>`).join("");
+  const parts=[["Correct",cOk,"var(--good)"],["Incorrect",cBad,"var(--bad)"],["Extra",cExtra,"color-mix(in srgb,var(--bad) 55%,var(--dim))"],["Missed",cMiss,"var(--dim)"]];
+  const tot=parts.reduce((a,p)=>a+p[1],0)||1;
+  $("charBar").innerHTML=parts.map(p=>`<span style="width:${p[1]/tot*100}%;background:${p[2]}" title="${p[0]}: ${p[1]}"></span>`).join("");
+  $("charKey").innerHTML=parts.map(p=>`<span><i style="background:${p[2]}"></i>${p[0]} <b>${p[1]}</b></span>`).join("");
+  const top=Object.entries(missed).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  $("caps").innerHTML=top.length?top.map(([k,n])=>`<div class="keycap">${esc(k)}<small>×${n}</small></div>`).join(""):`<p class="empty">No missed keys — clean run.</p>`;
+  const h=store.get("tt-kids-hist",[]);
+  const best={};h.forEach(x=>{best[x.level+x.dur]=Math.max(best[x.level+x.dur]||0,x.wpm)});
+  $("hist").innerHTML=`<tr><th>When</th><th>Level</th><th>Length</th><th>WPM</th><th>Raw</th><th>Accuracy</th><th>Consistency</th></tr>`+h.slice(0,10).map(x=>`<tr><td>${new Date(x.date).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${{starter:"Starter",explorer:"Explorer",challenge:"Challenge"}[x.level]||""}</td><td>${fmt(x.dur)}${x.dur<60?"s":""}</td><td class="${x.wpm===best[x.level+x.dur]?"pb":""}">${x.wpm}</td><td>${x.raw}</td><td>${x.acc}%</td><td>${x.cons}%</td></tr>`).join("");
+  $("results").dataset.copy=`Typing test, ${cfg.level} level (${fmt(cfg.dur)}${cfg.dur<60?"s":""}): ${r.wpm} WPM, ${r.acc}% accuracy, raw ${r.raw}, consistency ${r.cons}%`;
+  $("test").style.display="none";$("results").style.display="block";
+  draw();$("next").focus({preventScroll:true});
+}
+const svg=$("chart");
+function draw(){
+  const W=svg.clientWidth,H=svg.clientHeight;if(!W||!secs.length){svg.innerHTML="";return}
+  const p={l:W<520?30:40,r:14,t:16,b:28},iw=W-p.l-p.r,ih=H-p.t-p.b;
+  const maxY=Math.max(20,...secs.map(s=>Math.max(s.wpm,s.raw)))*1.1,n=secs.length;
+  const x=i=>p.l+(n===1?iw/2:i/(n-1)*iw),y=v=>p.t+ih-v/maxY*ih;
+  const step=maxY>150?50:maxY>60?20:10;let g="";
+  for(let v=0;v<=maxY;v+=step)g+=`<line x1="${p.l}" x2="${W-p.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p.l-6}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="var(--dim)">${v}</text>`;
+  const xs=Math.max(1,Math.ceil(n/(W<520?4:8)));
+  secs.forEach((s,i)=>{if(i%xs===0||i===n-1)g+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--dim)">${s.t}s</text>`});
+  const path=k=>secs.map((s,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(s[k]).toFixed(1)).join("");
+  g+=`<path d="${path("raw")}" fill="none" stroke="var(--dim)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+  g+=`<path d="${path("wpm")}" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linejoin="round"/>`;
+  secs.forEach((s,i)=>{if(s.err)g+=`<circle cx="${x(i)}" cy="${y(0)-6}" r="${Math.min(7,2.5+s.err)}" fill="var(--bad)"><title>${s.err} error${s.err>1?"s":""} at ${s.t}s</title></circle>`});
+  svg.innerHTML=g;
+}
+const chartRO=new ResizeObserver(draw);chartRO.observe(svg);
+const stageRO=new ResizeObserver(()=>place());stageRO.observe(stage);
+
+function applyCfg(){
+  document.querySelectorAll("[data-dur]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.dur===cfg.dur)));
+  $("customDur").value=[15,30,60,120].includes(cfg.dur)?"":cfg.dur;
+  $("size").value=cfg.size;$("sizev").textContent=cfg.size+"px";stage.style.setProperty("--fs",cfg.size+"px");
+  $("optPunct").setAttribute("aria-pressed",String(cfg.punct));$("optNum").setAttribute("aria-pressed",String(cfg.num));
+  store.set("tt-kids-cfg",cfg);
+  document.querySelectorAll("[data-level]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.level===cfg.level)));
+}
+document.querySelectorAll("[data-dur]").forEach(b=>b.addEventListener("click",()=>{cfg.dur=+b.dataset.dur;applyCfg();reset(false)}));
+$("customDur").addEventListener("change",e=>{const v=Math.round(+e.target.value);if(v>=5&&v<=600){cfg.dur=v;applyCfg();reset(false)}});
+$("size").addEventListener("input",e=>{cfg.size=+e.target.value;applyCfg();place()});
+$("optPunct").addEventListener("click",()=>{cfg.punct=!cfg.punct;applyCfg();reset(false)});
+$("optNum").addEventListener("click",()=>{cfg.num=!cfg.num;applyCfg();reset(false)});
+document.querySelectorAll("[data-level]").forEach(b=>b.addEventListener("click",()=>{cfg.level=b.dataset.level;applyCfg();reset(false)}));
+$("restart").addEventListener("click",()=>reset(false));
+$("next").addEventListener("click",()=>reset(false));
+$("repeat").addEventListener("click",()=>reset(true));
+$("copy").addEventListener("click",async e=>{try{await navigator.clipboard.writeText($("results").dataset.copy);e.target.textContent="Copied"}catch(err){e.target.textContent="Copy blocked"}setTimeout(()=>e.target.textContent="Copy result",1500)});
+
+applyCfg();reset(false);
+if(document.fonts)document.fonts.ready.then(place);
+}
+</script>
+</body>
+</html>
