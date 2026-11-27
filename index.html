@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Practice Corner</title>
+<title>Ready, Set, Learn</title>
 <meta name="description" content="Free typing, spelling and maths practice for children in UK Years 2 to 6. No sign-up, no tracking.">
-<meta property="og:title" content="Practice Corner">
+<meta property="og:title" content="Ready, Set, Learn">
 <meta property="og:description" content="Typing, spelling and maths practice for Years 2 to 6.">
 <meta name="theme-color" content="#2f5bea">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>try{var t=JSON.parse(localStorage.getItem("rsl-theme"));if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="assets/common.css">
 <style>
 .hero{padding-bottom:8px}
@@ -27,12 +28,13 @@
 .go span:last-child{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;font-size:22px}
 .notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:34px;color:var(--dim);font-size:15px}
 .notes b{display:block;color:var(--ink);font-size:16px}
+.notes .clear{display:flex;margin-top:12px;min-height:44px;font-size:15px}
 @media(max-width:760px){.cards,.notes{grid-template-columns:minmax(0,1fr)}.art{aspect-ratio:16/7}}
 </style>
 </head>
 <body>
 <header class="site-head">
-  <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="12" width="9" height="11" rx="2.5" fill="#2f5bea"/><rect x="11.5" y="7" width="9" height="16" rx="2.5" fill="#d9452c"/><rect x="22" y="3" width="9" height="20" rx="2.5" fill="#0b7f72"/><rect x="1" y="25" width="30" height="4" rx="2" fill="currentColor" opacity=".25"/></svg>Practice Corner</a>
+  <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="12" width="9" height="11" rx="2.5" fill="#2f5bea"/><rect x="11.5" y="7" width="9" height="16" rx="2.5" fill="#d9452c"/><rect x="22" y="3" width="9" height="20" rx="2.5" fill="#0b7f72"/><rect x="1" y="25" width="30" height="4" rx="2" fill="currentColor" opacity=".25"/></svg>Ready, Set, Learn</a>
   <nav class="site-nav" aria-label="Activities"><a href="typing.html">Typing</a><a href="spelling.html">Spelling</a><a href="maths.html">Maths</a></nav>
 </header>
 
@@ -80,9 +82,22 @@
   <div class="notes">
     <p><b>For Years 2 to 6</b>Spelling uses the national curriculum word lists; maths follows what each year group learns.</p>
     <p><b>Works on tablets</b>Tap or drag on a touchscreen, or use a keyboard on a computer.</p>
-    <p><b>Private by design</b>No sign-up and no tracking. Scores are saved only on this device.</p>
+    <p><b>Private by design</b>No sign-up, no names and no accounts. Absolutely nothing is sent, tracked or recorded by us: no cookies, no analytics, completely anonymous, and there will never be adverts. Your scores are kept only in this browser on this device, so you can see your progress, and you can clear them at any time.
+      <button class="btn clear" id="clearScores" type="button">Clear saved scores</button></p>
   </div>
 </main>
-<footer class="site-foot">Practice Corner · v5</footer>
+<script src="assets/common.js"></script>
+<script>
+{
+const b=document.getElementById("clearScores");let armed=false,tm=null;
+b.addEventListener("click",()=>{
+  if(!armed){armed=true;b.textContent="Tap again to clear all scores";clearTimeout(tm);tm=setTimeout(()=>{armed=false;b.textContent="Clear saved scores"},4000);return}
+  clearTimeout(tm);armed=false;
+  try{Object.keys(localStorage).filter(k=>/^(tt-|sp-|mt-)/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  b.textContent="Scores cleared";setTimeout(()=>b.textContent="Clear saved scores",2500);
+});
+}
+</script>
+<footer class="site-foot">Ready, Set, Learn · v6</footer>
 </body>
 </html>

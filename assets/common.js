@@ -34,5 +34,18 @@ window.App = (function () {
     document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(!!test(b))));
   }
   function fmtTime(s) { s = Math.round(s); return s >= 60 ? Math.floor(s / 60) + "m " + (s % 60) + "s" : s + "s"; }
+  // Light / dark mode switch, shown in every page header. Follows the device until changed.
+  const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+  const MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
+  const root = document.documentElement;
+  const current = () => root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  function themeButton() {
+    const nav = document.querySelector(".site-nav"); if (!nav) return;
+    const b = document.createElement("button"); b.type = "button"; b.className = "theme-btn";
+    const paint = () => { const d = current() === "dark"; b.innerHTML = d ? SUN : MOON; b.setAttribute("aria-label", d ? "Switch to light mode" : "Switch to dark mode"); b.title = b.getAttribute("aria-label"); };
+    b.addEventListener("click", () => { root.dataset.theme = current() === "dark" ? "light" : "dark"; store.set("rsl-theme", root.dataset.theme); paint(); window.dispatchEvent(new Event("resize")); });
+    paint(); nav.appendChild(b);
+  }
+  themeButton();
   return { store, esc, rnd, pick, shuffle, speak, canSpeak, stars, chips, press, fmtTime };
 })();
