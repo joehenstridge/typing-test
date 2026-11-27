@@ -1,4 +1,4 @@
-# Ready, Set, Learn (v6)
+# Ready, Set, Learn (v8)
 
 Free typing, spelling and maths practice for children in UK Years 2 to 6.
 A static site with no build step, no tracking and no third-party requests.
@@ -17,7 +17,7 @@ No accounts, cookies, analytics or adverts. Nothing is sent anywhere. Scores sta
    ```
    git init -b main
    git add .
-   git commit -m "Ready, Set, Learn v6"
+   git commit -m "Ready, Set, Learn v8"
    git remote add origin https://github.com/<you>/ready-set-learn.git
    git push -u origin main
    ```
