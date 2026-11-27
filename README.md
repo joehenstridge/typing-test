@@ -1,33 +1,38 @@
-# Typing Test for Kids (v4)
+# Practice Corner (v5)
 
-A static, single-page typing test for children and young people.
+Free typing, spelling and maths practice for children in UK Years 2 to 6.
+A static site with no build step, no tracking and no third-party requests.
 
-- Three levels: Starter, Explorer and Challenge, each with original passages
-- Test length from 15 seconds to 10 minutes; adjustable text size
-- Optional punctuation/capitals and number passages
-- Results: words per minute, accuracy, stars and encouragement, speed chart, character breakdown, keys to practise, recent tests
+## Pages
+- `index.html`: home screen with the three activities
+- `typing.html`: typing test with Starter, Explorer and Challenge passages. Passages rotate, so each test starts on new text
+- `spelling.html`: Years 2 to 6, using the English national curriculum spelling lists. The word shows for 3, 5 or 8 seconds and is read aloud. Then the child drags, taps or types the letter tiles into order. Years 4 to 6 add 1 or 2 decoy letters
+- `maths.html`: Years 2 to 6. Adding, taking away, times tables and dividing, with times tables you can choose. On-screen keypad for tablets
 
-## Privacy
-No tracking, cookies, analytics or third-party requests (enforced by a Content-Security-Policy meta tag).
-Fonts are bundled locally. Settings and recent scores stay in the browser's localStorage only.
+All results stay in the browser's localStorage on that device.
 
 ## Deploying to GitHub Pages
-1. Create a new repository on GitHub (e.g. `typing-test`). It must be public on a free plan.
-2. Push these files to the `main` branch (or use "Add file > Upload files" and drag in everything, including the `.github` folder).
-3. In the repository go to **Settings > Pages** and set **Source** to **GitHub Actions**.
-4. The "Deploy to GitHub Pages" workflow runs on every push to `main`. Watch it under the **Actions** tab.
-5. The site appears at `https://<your-username>.github.io/<repo-name>/`.
+1. Create a new public repository on GitHub, e.g. `practice-corner`.
+2. Push these files to `main`:
+   ```
+   git init -b main
+   git add .
+   git commit -m "Practice Corner v5"
+   git remote add origin https://github.com/<you>/practice-corner.git
+   git push -u origin main
+   ```
+3. In the repository, open **Settings > Pages** and set **Source** to **GitHub Actions**.
+4. The workflow in `.github/workflows/pages.yml` deploys every push to `main`.
+   The site appears at `https://<you>.github.io/practice-corner/`.
 
-All paths are relative, so it works from a project sub-path or a custom domain.
-For a custom domain, add it under Settings > Pages and tick "Enforce HTTPS".
+All links are relative, so the site also works on a custom domain.
 
-## Files
-- `index.html`: the whole app (HTML, CSS, JS)
-- `fonts/`: Archivo and JetBrains Mono (SIL Open Font License)
-- `favicon.svg`
-- `.github/workflows/pages.yml`: GitHub Pages deploy workflow
-- `.nojekyll`: serves files as-is, without Jekyll processing
+## Editing content
+- Typing passages: `typing.html`, search for `const PASSAGES=`
+- Spelling words: `spelling.html`, search for `const WORDS=` (keys "2" to "6")
+- Maths difficulty: `maths.html`, functions `addPair`, `mulPair` and `divPair`
 
-## Editing passages
-Search `index.html` for `const PASSAGES=` and add or change sentences under starter, explorer or challenge.
-Passages containing digits only appear when "Numbers" is switched on.
+## Notes
+- Read-aloud uses the browser's built-in speech (Web Speech API) and prefers a British English voice.
+  It works in current Chrome, Edge and Safari, including on iPad. If a device has no voice, the button is disabled.
+- Fonts (Archivo, JetBrains Mono) are bundled under the SIL Open Font License.

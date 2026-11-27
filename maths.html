@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Maths Test · Practice Corner</title>
+<meta name="description" content="Maths practice for UK Years 2 to 6: addition, subtraction, times tables and division, matched to each year group.">
+<meta name="theme-color" content="#0b7f72">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:10px;font-weight:600}
+.bar .score{color:var(--acc)}
+.stage{background:var(--cap);border-radius:20px;padding:clamp(18px,4vw,36px);margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:clamp(18px,4vw,40px);align-items:center}
+.q{font:800 clamp(40px,8vw,76px)/1.1 Archivo,sans-serif;letter-spacing:-.01em;white-space:nowrap;overflow-wrap:normal}
+.q .op{color:var(--acc);padding:0 .12em}
+.ansrow{display:flex;align-items:center;gap:12px;margin-top:18px}
+#ans{font:800 clamp(34px,6vw,56px) Archivo,sans-serif;width:100%;max-width:340px;min-height:76px;padding:4px 16px;border-radius:14px;border:3px solid var(--cap2);background:var(--bg);color:var(--ink);text-align:center}
+#ans:focus{border-color:var(--acc);outline:none}
+.fb{min-height:40px;margin-top:12px;font:800 24px/1.3 Archivo,sans-serif}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.stage.right #ans{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--bg))}
+.stage.wrong #ans{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--bg))}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pad button{font:800 26px Archivo,sans-serif;min-height:60px;border-radius:12px;border:1px solid var(--cap2);border-bottom-width:4px;background:var(--bg);color:var(--ink);cursor:pointer;touch-action:manipulation}
+.pad button:active{transform:translateY(2px);border-bottom-width:2px}
+.pad .go{background:var(--acc);color:#fff;border-color:color-mix(in srgb,var(--acc) 70%,#000);font-size:19px}
+.pad .del{font-size:19px}
+.rows{display:grid;gap:10px}
+.r{display:grid;grid-template-columns:130px minmax(0,1fr) 70px;align-items:center;gap:12px;font-weight:600}
+.r .track{height:14px;border-radius:7px;background:var(--cap);overflow:hidden}
+.r .track i{display:block;height:100%;background:var(--acc)}
+.r span:last-child{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+@media(max-width:700px){.stage{grid-template-columns:minmax(0,1fr)}.q,.ansrow{text-align:center;justify-content:center}.r{grid-template-columns:100px minmax(0,1fr) 60px}}
+</style>
+</head>
+<body data-sec="maths">
+<header class="site-head">
+  <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="12" width="9" height="11" rx="2.5" fill="#2f5bea"/><rect x="11.5" y="7" width="9" height="16" rx="2.5" fill="#d9452c"/><rect x="22" y="3" width="9" height="20" rx="2.5" fill="#0b7f72"/><rect x="1" y="25" width="30" height="4" rx="2" fill="currentColor" opacity=".25"/></svg>Practice Corner</a>
+  <nav class="site-nav" aria-label="Activities"><a href="typing.html">Typing</a><a href="spelling.html">Spelling</a><a href="maths.html" aria-current="page">Maths</a></nav>
+</header>
+<main class="wrap">
+  <h1>Maths <span>test</span></h1>
+  <p class="lede">Choose your year and what to practise. Answer each question, then see how you did.</p>
+
+  <section id="setup">
+    <div class="panel">
+      <div class="grp" role="group" aria-label="School year"><b>Year</b>
+        <button class="chip" data-year="2">Year 2</button><button class="chip" data-year="3">Year 3</button><button class="chip" data-year="4">Year 4</button><button class="chip" data-year="5">Year 5</button><button class="chip" data-year="6">Year 6</button>
+      </div>
+      <div class="grp" role="group" aria-label="Question types"><b>Practise</b>
+        <button class="chip" data-op="add">Adding +</button><button class="chip" data-op="sub">Taking away −</button><button class="chip" data-op="mul">Times ×</button><button class="chip" data-op="div">Dividing ÷</button>
+      </div>
+      <div class="grp" role="group" aria-label="Times tables"><b>Times tables</b><span id="tables" class="grp"></span></div>
+      <div class="grp" role="group" aria-label="Number of questions"><b>Questions</b>
+        <button class="chip" data-count="10">10</button><button class="chip" data-count="20">20</button><button class="chip" data-count="30">30</button>
+      </div>
+    </div>
+    <p class="lede" id="yearNote"></p>
+    <button class="btn pri" id="start">Start maths</button>
+  </section>
+
+  <section id="play" class="hidden">
+    <div class="bar"><span id="count">Question 1 of 10</span><span id="clock">0s</span><span class="score" id="score">0 correct</span></div>
+    <div class="progress"><i id="prog"></i></div>
+    <div class="stage" id="stage">
+      <div>
+        <div class="q" id="q" aria-live="polite"></div>
+        <form class="ansrow" id="form" autocomplete="off">
+          <input id="ans" inputmode="numeric" aria-label="Your answer" maxlength="9">
+        </form>
+        <div class="fb" id="fb" aria-live="assertive"></div>
+      </div>
+      <div class="pad" id="pad">
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="del" class="del" aria-label="Delete">Delete</button><button data-k="0">0</button><button data-k="go" class="go">Enter</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="hidden" aria-live="polite">
+    <p class="cheer" id="cheer"></p>
+    <div class="kpis" id="kpis"></div>
+    <h2>How you did on each type</h2>
+    <div class="rows" id="byop"></div>
+    <div id="mistakesWrap"><h2>Questions to look at again</h2><div class="scroll"><table id="mistakes"></table></div></div>
+    <h2>Recent tests</h2>
+    <div class="scroll"><table id="hist"></table></div>
+    <div class="actions">
+      <button class="btn pri" id="again">Play again</button>
+      <button class="btn" id="change">Change settings</button>
+    </div>
+  </section>
+</main>
+<footer class="site-foot">Questions are matched to what each year group learns in the national curriculum. Scores are saved only on this device. · v5</footer>
+
+<script src="assets/common.js"></script>
+<script>
+{
+const {store,esc,rnd,pick,stars,chips,press,fmtTime}=App;
+const $=id=>document.getElementById(id);
+const OPS={add:{sym:"+",name:"Adding"},sub:{sym:"−",name:"Taking away"},mul:{sym:"×",name:"Times"},div:{sym:"÷",name:"Dividing"}};
+const DEFAULT_TABLES={"2":[2,5,10],"3":[2,3,4,5,8,10],"4":[2,3,4,5,6,7,8,9,10,11,12],"5":[2,3,4,5,6,7,8,9,10,11,12],"6":[2,3,4,5,6,7,8,9,10,11,12]};
+const NOTES={
+"2":"Year 2: adding and taking away with numbers up to 100, and the 2, 5 and 10 times tables.",
+"3":"Year 3: adding and taking away with 3-digit numbers, and the 3, 4 and 8 times tables too.",
+"4":"Year 4: 4-digit adding and taking away, all times tables up to 12 × 12, and 2-digit × 1-digit.",
+"5":"Year 5: bigger numbers, multiplying by 10, 100 and 1,000, and dividing 3-digit numbers.",
+"6":"Year 6: large numbers, 2-digit × 2-digit, and dividing by 2-digit numbers. Have some paper ready."};
+const cfg=Object.assign({year:"2",ops:["add","sub","mul","div"],count:10,tables:null},store.get("mt-cfg",{}));
+if(!cfg.tables||!cfg.tables.length)cfg.tables=DEFAULT_TABLES[cfg.year].slice();
+let qs=[],qi=0,answers=[],busy=false,t0=0,clock=null,qStart=0;
+
+$("tables").innerHTML=[2,3,4,5,6,7,8,9,10,11,12].map(t=>`<button class="chip" data-t="${t}">${t}</button>`).join("");
+function applyCfg(){
+  press("[data-year]",b=>b.dataset.year===cfg.year);press("[data-op]",b=>cfg.ops.includes(b.dataset.op));
+  press("[data-t]",b=>cfg.tables.includes(+b.dataset.t));press("[data-count]",b=>+b.dataset.count===cfg.count);
+  $("yearNote").textContent=NOTES[cfg.year];$("start").disabled=!cfg.ops.length||!cfg.tables.length;
+  store.set("mt-cfg",cfg);
+}
+chips("[data-year]",b=>{cfg.year=b.dataset.year;cfg.tables=DEFAULT_TABLES[cfg.year].slice();applyCfg()});
+chips("[data-op]",b=>{const o=b.dataset.op;cfg.ops=cfg.ops.includes(o)?cfg.ops.filter(x=>x!==o):[...cfg.ops,o];applyCfg()});
+chips("[data-t]",b=>{const t=+b.dataset.t;cfg.tables=cfg.tables.includes(t)?cfg.tables.filter(x=>x!==t):[...cfg.tables,t].sort((a,b)=>a-b);applyCfg()});
+chips("[data-count]",b=>{cfg.count=+b.dataset.count;applyCfg()});
+
+// Question generators, by year group. Every answer is a whole number of zero or more.
+function addPair(y){
+  if(y==="2"){const k=rnd(0,2);if(k===0){const a=rnd(10,89);return[a,rnd(1,Math.min(9,99-a))]}if(k===1){const a=rnd(1,8)*10+rnd(0,9);return[a,rnd(1,9-Math.floor(a/10))*10]}const a=rnd(11,60);return[a,rnd(11,99-a)]}
+  if(y==="3"){const a=rnd(100,899),b=pick([rnd(1,9),rnd(1,9)*10,rnd(1,8)*100,rnd(11,99),rnd(101,399)]);return a+b<1000?[a,b]:[a,rnd(1,9)]}
+  if(y==="4"){const a=rnd(1000,6999);return[a,pick([rnd(100,999),rnd(1000,2999)])]}
+  if(y==="5"){const a=rnd(10000,69999);return[a,pick([rnd(1000,9999),rnd(10000,29999)])]}
+  const a=rnd(100000,699999);return[a,pick([rnd(10000,99999),rnd(100000,299999)])];
+}
+function fact(){const t=pick(cfg.tables),b=rnd(1,12);return Math.random()<.5?[t,b]:[b,t]}
+function mulPair(y){
+  const r=Math.random();
+  if(y==="2"||y==="3")return fact();
+  if(y==="4")return r<.7?fact():[rnd(11,49),rnd(2,9)];
+  if(y==="5")return r<.4?fact():r<.7?[rnd(12,99),rnd(2,9)]:r<.85?[rnd(101,499),rnd(2,9)]:[rnd(2,99),pick([10,100,1000])];
+  return r<.3?fact():r<.7?[rnd(11,39),rnd(11,29)]:r<.85?[rnd(101,999),rnd(2,9)]:[rnd(11,999),pick([10,100,1000])];
+}
+function divPair(y){
+  const r=Math.random(),f=()=>{const t=pick(cfg.tables),b=rnd(1,12);return[t*b,t]};
+  if(y==="2"||y==="3")return f();
+  if(y==="4"){if(r<.75)return f();const d=rnd(2,9);return[rnd(11,30)*d,d]}
+  if(y==="5"){if(r<.4)return f();const d=rnd(2,9);return[rnd(12,Math.floor(999/d))*d,d]}
+  if(r<.3)return f();if(r<.7){const d=rnd(2,9);return[rnd(12,Math.floor(999/d))*d,d]}
+  const d=rnd(11,25);return[rnd(12,99)*d,d];
+}
+function make(op){
+  const y=cfg.year;let a,b,ans;
+  if(op==="add"){[a,b]=addPair(y);ans=a+b}
+  else if(op==="sub"){const[x,z]=addPair(y);a=x+z;b=z;ans=x}
+  else if(op==="mul"){[a,b]=mulPair(y);ans=a*b}
+  else{[a,b]=divPair(y);ans=a/b}
+  return{op,a,b,ans};
+}
+const fmt=n=>n.toLocaleString("en-GB");
+const qText=q=>`${fmt(q.a)} ${OPS[q.op].sym} ${fmt(q.b)}`;
+
+function start(){
+  qs=[];const seen=new Set();
+  for(let i=0;i<cfg.count;i++){let q,tries=0;do{q=make(cfg.ops[i%cfg.ops.length])}while(seen.has(qText(q))&&++tries<20);seen.add(qText(q));qs.push(q)}
+  qs=App.shuffle(qs);qi=0;answers=[];
+  $("setup").classList.add("hidden");$("results").classList.add("hidden");$("play").classList.remove("hidden");
+  $("ans").setAttribute("inputmode",matchMedia("(pointer:coarse)").matches?"none":"numeric");
+  t0=performance.now();clearInterval(clock);clock=setInterval(()=>{$("clock").textContent=fmtTime((performance.now()-t0)/1000)},500);
+  ask();
+}
+function ask(){
+  const q=qs[qi];busy=false;
+  $("q").innerHTML=`${fmt(q.a)}<span class="op">${OPS[q.op].sym}</span>${fmt(q.b)} =`;
+  $("q").setAttribute("aria-label",`What is ${qText(q).replace("−","minus").replace("×","times").replace("÷","divided by")}?`);
+  $("count").textContent=`Question ${qi+1} of ${qs.length}`;
+  $("score").textContent=`${answers.filter(a=>a.ok).length} correct`;
+  $("prog").style.width=(qi/qs.length*100)+"%";
+  $("ans").value="";$("fb").textContent="";$("fb").className="fb";$("stage").className="stage";
+  $("ans").focus({preventScroll:true});qStart=performance.now();
+}
+function submit(){
+  if(busy)return;const raw=$("ans").value.replace(/[,\s]/g,"");
+  if(raw===""||!/^\d+$/.test(raw)){$("fb").textContent="Type a number first";$("fb").className="fb";return}
+  busy=true;const q=qs[qi],given=+raw,ok=given===q.ans;
+  answers.push({...q,given,ok,secs:(performance.now()-qStart)/1000});
+  $("stage").className="stage "+(ok?"right":"wrong");
+  $("fb").className="fb "+(ok?"ok":"no");
+  $("fb").textContent=ok?pick(["Correct!","Brilliant!","Spot on!","Well done!"]):`Not quite. ${qText(q)} = ${fmt(q.ans)}`;
+  setTimeout(()=>{qi++;qi<qs.length?ask():finish()},ok?700:2200);
+}
+$("form").addEventListener("submit",e=>{e.preventDefault();submit()});
+$("ans").addEventListener("input",e=>{e.target.value=e.target.value.replace(/[^\d,]/g,"")});
+$("pad").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b||busy)return;const k=b.dataset.k,inp=$("ans");
+  if(k==="go")submit();else if(k==="del")inp.value=inp.value.slice(0,-1);else if(inp.value.length<9)inp.value+=k;
+});
+$("start").addEventListener("click",start);
+$("again").addEventListener("click",start);
+$("change").addEventListener("click",()=>{$("results").classList.add("hidden");$("setup").classList.remove("hidden")});
+
+function finish(){
+  clearInterval(clock);const time=(performance.now()-t0)/1000;
+  $("play").classList.add("hidden");$("results").classList.remove("hidden");
+  const n=answers.length,c=answers.filter(a=>a.ok).length,pct=Math.round(c/n*100);
+  const hist=store.get("mt-hist",[]);
+  const prevBest=Math.max(0,...hist.filter(h=>h.year===cfg.year).map(h=>h.pct));
+  const st=pct>=90?3:pct>=70?2:pct>=40?1:0;
+  const msg=pct===100?"Perfect score! Every answer right.":pct>prevBest&&hist.some(h=>h.year===cfg.year)?"New best score, brilliant!":pct>=70?"Great maths, well done!":pct>=40?"Good effort! Look at the questions below and try again.":"Keep practising, you'll get there!";
+  $("cheer").innerHTML=stars(st)+" "+esc(msg);
+  hist.unshift({date:Date.now(),year:cfg.year,n,c,pct,time:Math.round(time),ops:cfg.ops.slice()});store.set("mt-hist",hist.slice(0,20));
+  $("kpis").innerHTML=[["Score",`${c} / ${n}`,1],["Correct",pct+"%"],["Total time",fmtTime(time)],["Average per question",(time/n).toFixed(1)+"s"],["Best for this year",Math.max(prevBest,pct)+"%"]].map(([l,v,h])=>`<div class="k${h?" hero":""}"><small>${l}</small><b>${esc(v)}</b></div>`).join("");
+  $("byop").innerHTML=Object.keys(OPS).filter(o=>answers.some(a=>a.op===o)).map(o=>{
+    const all=answers.filter(a=>a.op===o),ok=all.filter(a=>a.ok).length;
+    return `<div class="r"><span>${OPS[o].name}</span><div class="track"><i style="width:${ok/all.length*100}%"></i></div><span>${ok} / ${all.length}</span></div>`;
+  }).join("");
+  const wrong=answers.filter(a=>!a.ok);
+  $("mistakesWrap").classList.toggle("hidden",!wrong.length);
+  $("mistakes").innerHTML=`<tr><th>Question</th><th class="num">You said</th><th class="num">Answer</th></tr>`+wrong.map(a=>`<tr><td><b>${esc(qText(a))}</b></td><td class="num no">${esc(fmt(a.given))}</td><td class="num ok">${esc(fmt(a.ans))}</td></tr>`).join("");
+  const h=store.get("mt-hist",[]);
+  $("hist").innerHTML=`<tr><th>When</th><th>Year</th><th>Practised</th><th class="num">Score</th><th class="num">Time</th></tr>`+h.slice(0,10).map(x=>`<tr><td>${new Date(x.date).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>Year ${esc(x.year)}</td><td>${(x.ops||[]).map(o=>OPS[o]?OPS[o].sym:"").join(" ")}</td><td class="num">${x.c} / ${x.n}</td><td class="num">${fmtTime(x.time)}</td></tr>`).join("");
+  $("again").focus({preventScroll:true});
+}
+applyCfg();
+}
+</script>
+</body>
+</html>

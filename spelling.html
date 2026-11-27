@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Spelling Test · Practice Corner</title>
+<meta name="description" content="Spelling practice for UK Years 2 to 6 using the national curriculum word lists. See the word, hear it, then put the letters in order.">
+<meta name="theme-color" content="#d9452c">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:10px;font-weight:600}
+.bar .score{color:var(--acc)}
+.stage{background:var(--cap);border-radius:20px;padding:clamp(18px,4vw,36px);margin-top:14px;text-align:center;--ts:56px}
+.say{font-size:14px;font-weight:600;color:var(--dim);margin:0 0 14px}
+.word{font:800 clamp(40px,9vw,84px)/1.1 Archivo,sans-serif;letter-spacing:.06em;margin:6px 0 18px;overflow-wrap:anywhere}
+.timer{height:12px;border-radius:6px;background:var(--bg);overflow:hidden;max-width:420px;margin:0 auto 20px}
+.timer i{display:block;height:100%;width:100%;background:var(--acc)}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--gap,8px);min-height:calc(var(--ts)*1.15 + 4px)}
+.slots{margin:8px 0 26px}
+.bank{padding:14px;border-radius:16px;background:color-mix(in srgb,var(--acc) 10%,var(--bg))}
+.slot{width:var(--ts);height:calc(var(--ts)*1.15);border-radius:calc(var(--ts)*.2);border:2px dashed var(--cap2);background:var(--bg);display:flex;align-items:flex-start;justify-content:center}
+.slot.over{border-color:var(--acc);border-style:solid;background:color-mix(in srgb,var(--acc) 15%,var(--bg))}
+.tile{width:var(--ts);height:calc(var(--ts)*1.15);border-radius:calc(var(--ts)*.2);background:#fff;color:#2b1b17;border:2px solid color-mix(in srgb,var(--acc) 55%,#000);border-bottom-width:calc(var(--ts)*.12);display:flex;align-items:center;justify-content:center;font:800 calc(var(--ts)*.56)/1 Archivo,sans-serif;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;flex:none}
+.slot .tile{margin:-2px}
+.tile.space{visibility:hidden}
+.tile.lifted{opacity:.3}
+.ghost{position:fixed;z-index:50;pointer-events:none;transform:scale(1.1) rotate(-3deg);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.slots.right .tile{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,#fff)}
+.slots.wrong .tile{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,#fff)}
+.controls{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
+.verdict{font:800 clamp(26px,5vw,38px)/1.1 Archivo,sans-serif;margin:0 0 8px}
+.verdict.ok{color:var(--good)}.verdict.no{color:var(--bad)}
+.answer{font-size:18px;margin:6px 0 0}
+.answer b{font:800 26px Archivo,sans-serif;letter-spacing:.05em}
+.keyhint{font-size:13px;color:var(--dim);margin:14px 0 0}
+.practise{display:flex;flex-wrap:wrap;gap:8px}
+.practise button{font:700 17px Archivo,sans-serif;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--cap2);border-bottom-width:3px;background:var(--cap);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.practise svg{width:18px;height:18px}
+@media(max-width:600px){.stage{padding:16px 10px;--gap:5px}.bank{padding:10px 6px}}
+</style>
+</head>
+<body data-sec="spelling">
+<header class="site-head">
+  <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="12" width="9" height="11" rx="2.5" fill="#2f5bea"/><rect x="11.5" y="7" width="9" height="16" rx="2.5" fill="#d9452c"/><rect x="22" y="3" width="9" height="20" rx="2.5" fill="#0b7f72"/><rect x="1" y="25" width="30" height="4" rx="2" fill="currentColor" opacity=".25"/></svg>Practice Corner</a>
+  <nav class="site-nav" aria-label="Activities"><a href="typing.html">Typing</a><a href="spelling.html" aria-current="page">Spelling</a><a href="maths.html">Maths</a></nav>
+</header>
+<main class="wrap">
+  <h1>Spelling <span>test</span></h1>
+  <p class="lede">Look at the word and listen. When it disappears, put the letters in the right order.</p>
+
+  <section id="setup">
+    <div class="panel">
+      <div class="grp" role="group" aria-label="School year"><b>Year</b>
+        <button class="chip" data-year="2">Year 2</button><button class="chip" data-year="3">Year 3</button><button class="chip" data-year="4">Year 4</button><button class="chip" data-year="5">Year 5</button><button class="chip" data-year="6">Year 6</button>
+      </div>
+      <div class="grp" role="group" aria-label="Number of words"><b>Words</b>
+        <button class="chip" data-count="10">10</button><button class="chip" data-count="15">15</button><button class="chip" data-count="20">20</button>
+      </div>
+      <div class="grp" role="group" aria-label="How long to show each word"><b>Show word for</b>
+        <button class="chip" data-show="3">3s</button><button class="chip" data-show="5">5s</button><button class="chip" data-show="8">8s</button>
+      </div>
+      <div class="grp"><b>Sound</b><button class="chip" id="sound">Read words aloud</button></div>
+    </div>
+    <p class="lede" id="yearNote"></p>
+    <button class="btn pri" id="start">Start spelling</button>
+  </section>
+
+  <section id="play" class="hidden">
+    <div class="bar"><span id="count">Word 1 of 10</span><span class="score" id="score">0 correct</span></div>
+    <div class="progress"><i id="prog"></i></div>
+
+    <div class="stage" id="look">
+      <p class="say">Remember this word</p>
+      <div class="word" id="theWord"></div>
+      <div class="timer"><i id="timerBar"></i></div>
+      <div class="controls">
+        <button class="btn listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>Listen</button>
+        <button class="btn" id="ready">I'm ready</button>
+      </div>
+    </div>
+
+    <div class="stage hidden" id="spell">
+      <p class="say">Now spell it. Drag or tap the letters into the boxes.</p>
+      <div class="row slots" id="slots"></div>
+      <div class="row bank" id="bank"></div>
+      <div class="controls">
+        <button class="btn listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>Hear it again</button>
+        <button class="btn" id="clear">Clear</button>
+        <button class="btn pri" id="check" disabled>Check</button>
+      </div>
+      <p class="keyhint">On a keyboard you can type the letters, use Backspace to undo, and press Enter to check.</p>
+    </div>
+
+    <div class="stage hidden" id="feedback">
+      <p class="verdict" id="verdict"></p>
+      <div class="row slots" id="fbSlots"></div>
+      <p class="answer" id="fbAnswer"></p>
+      <div class="controls"><button class="btn pri" id="next">Next word</button></div>
+    </div>
+  </section>
+
+  <section id="results" class="hidden" aria-live="polite">
+    <p class="cheer" id="cheer"></p>
+    <div class="kpis" id="kpis"></div>
+    <div id="practiseWrap"><h2>Words to practise</h2><div class="practise" id="practise"></div></div>
+    <h2>Your answers</h2>
+    <div class="scroll"><table id="answers"></table></div>
+    <h2>Recent tests</h2>
+    <div class="scroll"><table id="hist"></table></div>
+    <div class="actions">
+      <button class="btn pri" id="again">Play again</button>
+      <button class="btn" id="change">Change settings</button>
+    </div>
+  </section>
+</main>
+<footer class="site-foot">Words come from the English national curriculum spelling lists for each year group. Scores are saved only on this device. · v5</footer>
+
+<script src="assets/common.js"></script>
+<script>
+{
+const {store,esc,shuffle,speak,canSpeak,stars,chips,press,fmtTime}=App;
+const WORDS={"2": ["door", "floor", "poor", "because", "find", "kind", "mind", "behind", "child", "children", "wild", "climb", "most", "only", "both", "old", "cold", "gold", "hold", "told", "every", "everybody", "even", "great", "break", "steak", "pretty", "beautiful", "after", "fast", "last", "past", "father", "class", "grass", "pass", "plant", "path", "bath", "hour", "move", "prove", "improve", "sure", "sugar", "eye", "could", "should", "would", "who", "whole", "any", "many", "clothes", "busy", "people", "water", "again", "half", "money", "parents"], "3": ["busy", "build", "early", "earth", "eight", "fruit", "group", "guard", "guide", "heard", "heart", "learn", "often", "reign", "woman", "women", "actual", "answer", "appear", "arrive", "breath", "caught", "centre", "circle", "decide", "eighth", "enough", "famous", "height", "island", "length", "minute", "notice", "recent", "though", "weight", "address", "believe", "bicycle", "breathe", "century", "certain", "extreme", "forward", "grammar", "history", "imagine", "library", "mention", "natural", "naughty", "perhaps", "popular", "possess"], "4": ["promise", "purpose", "quarter", "regular", "special", "strange", "suppose", "thought", "through", "various", "accident", "actually", "although", "business", "calendar", "complete", "consider", "continue", "describe", "exercise", "forwards", "increase", "interest", "material", "medicine", "occasion", "opposite", "ordinary", "peculiar", "position", "possible", "potatoes", "pressure", "probably", "question", "remember", "sentence", "separate", "straight", "strength", "surprise", "different", "difficult", "disappear", "favourite", "important", "knowledge", "therefore", "experience", "experiment", "particular", "possession", "accidentally", "occasionally"], "5": ["equip", "forty", "occur", "queue", "rhyme", "yacht", "bruise", "harass", "muscle", "occupy", "rhythm", "symbol", "system", "achieve", "amateur", "ancient", "average", "awkward", "bargain", "develop", "foreign", "leisure", "sincere", "soldier", "stomach", "suggest", "twelfth", "variety", "vehicle", "apparent", "attached", "category", "cemetery", "definite", "equipped", "familiar", "identity", "language", "nuisance", "persuade", "physical", "relevant", "shoulder", "thorough", "accompany", "according", "available", "committee", "community", "conscious", "criticise", "curiosity"], "6": ["desperate", "embarrass", "equipment", "excellent", "existence", "guarantee", "hindrance", "immediate", "interfere", "interrupt", "lightning", "necessary", "neighbour", "prejudice", "privilege", "programme", "recognise", "recommend", "sacrifice", "secretary", "signature", "sincerely", "vegetable", "aggressive", "appreciate", "conscience", "correspond", "determined", "dictionary", "disastrous", "especially", "exaggerate", "frequently", "government", "individual", "marvellous", "parliament", "profession", "restaurant", "sufficient", "accommodate", "communicate", "competition", "controversy", "convenience", "environment", "explanation", "immediately", "mischievous", "opportunity", "temperature", "pronunciation"]};
+const NOTES={"2":"Year 2 common exception words, like because, beautiful and people.","3":"Shorter words from the Year 3 and 4 list, like build, heard and island.","4":"Longer words from the Year 3 and 4 list, like believe, February and therefore.","5":"Shorter words from the Year 5 and 6 list, like queue, muscle and rhythm.","6":"Longer words from the Year 5 and 6 list, like embarrass, necessary and pronunciation."};
+const EXTRA={"2":0,"3":0,"4":1,"5":2,"6":2};
+const cfg=Object.assign({year:"2",count:10,show:5,sound:true},store.get("sp-cfg",{}));
+const $=id=>document.getElementById(id);
+const SPK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+let round=[],idx=0,results=[],phase="setup",word="",tiles=[],bankOrder=[],slots=[],lookTimer=null,wordStart=0;
+
+function applyCfg(){
+  press("[data-year]",b=>b.dataset.year===cfg.year);press("[data-count]",b=>+b.dataset.count===cfg.count);press("[data-show]",b=>+b.dataset.show===cfg.show);
+  $("sound").setAttribute("aria-pressed",String(cfg.sound&&canSpeak));
+  if(!canSpeak){$("sound").disabled=true;$("sound").textContent="Sound not available";}
+  $("yearNote").textContent=NOTES[cfg.year];
+  store.set("sp-cfg",cfg);
+}
+chips("[data-year]",b=>{cfg.year=b.dataset.year;applyCfg()});
+chips("[data-count]",b=>{cfg.count=+b.dataset.count;applyCfg()});
+chips("[data-show]",b=>{cfg.show=+b.dataset.show;applyCfg()});
+$("sound").addEventListener("click",()=>{cfg.sound=!cfg.sound;applyCfg()});
+
+function pickWords(n){
+  const key="sp-deck-"+cfg.year,all=WORDS[cfg.year],out=[];
+  let deck=store.get(key,[]).filter(w=>all.includes(w));
+  while(out.length<n){if(!deck.length)deck=shuffle(all.filter(w=>!out.includes(w)));out.push(deck.pop())}
+  store.set(key,deck);return out;
+}
+function show(id){["look","spell","feedback"].forEach(s=>$(s).classList.toggle("hidden",s!==id))}
+function say(){if(cfg.sound)speak(word)}
+
+function start(){
+  round=pickWords(cfg.count);idx=0;results=[];
+  $("setup").classList.add("hidden");$("results").classList.add("hidden");$("play").classList.remove("hidden");
+  nextWord();
+}
+function nextWord(){
+  word=round[idx];phase="look";
+  $("count").textContent=`Word ${idx+1} of ${round.length}`;
+  $("score").textContent=`${results.filter(r=>r.ok).length} correct`;
+  $("prog").style.width=(idx/round.length*100)+"%";
+  $("theWord").textContent=word;show("look");
+  const bar=$("timerBar");bar.style.transition="none";bar.style.width="100%";void bar.offsetWidth;
+  bar.style.transition=`width ${cfg.show}s linear`;bar.style.width="0%";
+  clearTimeout(lookTimer);lookTimer=setTimeout(toSpell,cfg.show*1000);
+  say();
+}
+function toSpell(){
+  clearTimeout(lookTimer);if(phase!=="look")return;phase="spell";
+  const letters=word.split("");
+  for(let i=0;i<EXTRA[cfg.year];i++)letters.push("aeioulnrst"[Math.floor(Math.random()*10)]);
+  tiles=letters.map((ch,id)=>({id,ch}));
+  do{bankOrder=shuffle(tiles.map(t=>t.id))}while(bankOrder.map(i=>tiles[i].ch).join("")===word&&word.length>1);
+  slots=Array(word.length).fill(null);
+  show("spell");sizeTiles();render();wordStart=performance.now();
+}
+function sizeTiles(){
+  const st=$("spell"),cs=getComputedStyle(st),gap=parseFloat(cs.getPropertyValue("--gap"))||8,w=st.clientWidth-parseFloat(cs.paddingLeft)*2-16,n=Math.max(word.length,tiles.length);
+  const ts=Math.max(38,Math.min(64,Math.floor((w-(n-1)*gap)/n)));
+  st.style.setProperty("--ts",ts+"px");$("feedback").style.setProperty("--ts",ts+"px");
+}
+function tileHTML(t){return `<div class="tile" role="button" tabindex="0" data-id="${t.id}" aria-label="letter ${esc(t.ch)}">${esc(t.ch)}</div>`}
+function render(){
+  $("slots").innerHTML=slots.map((id,i)=>`<div class="slot" data-i="${i}">${id===null?"":tileHTML(tiles[id])}</div>`).join("");
+  $("bank").innerHTML=bankOrder.map(id=>slots.includes(id)?`<div class="tile space"></div>`:tileHTML(tiles[id])).join("");
+  $("check").disabled=slots.includes(null);
+}
+function place(id,i){
+  const from=slots.indexOf(id),prev=slots[i];
+  slots[i]=id;if(from>=0)slots[from]=from===i?id:prev;
+}
+function unplace(id){const f=slots.indexOf(id);if(f>=0)slots[f]=null}
+function tap(id){
+  if(slots.includes(id))unplace(id);
+  else{const e=slots.indexOf(null);if(e>=0)place(id,e)}
+  render();
+}
+
+// Drag and drop with pointer events (mouse, touch and pen).
+let drag=null;
+const spell=$("spell");
+spell.addEventListener("pointerdown",e=>{
+  const t=e.target.closest(".tile:not(.space)");if(!t||phase!=="spell")return;
+  e.preventDefault();
+  drag={el:t,id:+t.dataset.id,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  try{t.setPointerCapture(e.pointerId)}catch(err){}
+});
+document.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  if(!drag.moved&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6){
+    drag.moved=true;const r=drag.el.getBoundingClientRect();
+    drag.ghost=drag.el.cloneNode(true);drag.ghost.classList.add("ghost");
+    drag.ghost.style.width=r.width+"px";drag.ghost.style.height=r.height+"px";
+    document.body.appendChild(drag.ghost);drag.el.classList.add("lifted");
+  }
+  if(drag.moved){
+    const g=drag.ghost;g.style.left=(e.clientX-g.offsetWidth/2)+"px";g.style.top=(e.clientY-g.offsetHeight/2)+"px";
+    const under=document.elementFromPoint(e.clientX,e.clientY),slot=under&&under.closest(".slot");
+    if(drag.over&&drag.over!==slot)drag.over.classList.remove("over");
+    if(slot){slot.classList.add("over");drag.over=slot}else drag.over=null;
+  }
+});
+function endDrag(e,cancel){
+  if(!drag)return;const d=drag;drag=null;
+  if(d.ghost)d.ghost.remove();
+  if(!d.moved){if(!cancel)tap(d.id);return}
+  const under=document.elementFromPoint(e.clientX,e.clientY);
+  const slot=under&&under.closest(".slot");
+  if(!cancel&&slot)place(d.id,+slot.dataset.i);
+  else if(!cancel&&under&&under.closest("#bank"))unplace(d.id);
+  render();
+}
+document.addEventListener("pointerup",e=>endDrag(e,false));
+document.addEventListener("pointercancel",e=>endDrag(e,true));
+
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(phase==="look"&&(e.key==="Enter"||e.key===" ")){e.preventDefault();toSpell();return}
+  if(phase==="feedback"&&e.key==="Enter"){e.preventDefault();$("next").click();return}
+  if(phase!=="spell")return;
+  const t=e.target.closest&&e.target.closest(".tile");
+  if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tap(+t.dataset.id);return}
+  if(/^[a-z]$/i.test(e.key)){
+    const k=e.key.toLowerCase(),id=bankOrder.find(i=>tiles[i].ch===k&&!slots.includes(i));
+    if(id!==undefined){const s=slots.indexOf(null);if(s>=0){place(id,s);render()}}
+  }else if(e.key==="Backspace"){
+    e.preventDefault();for(let i=slots.length-1;i>=0;i--)if(slots[i]!==null){slots[i]=null;break}render();
+  }else if(e.key==="Enter"&&!slots.includes(null)){e.preventDefault();check()}
+});
+
+function check(){
+  if(slots.includes(null))return;
+  const ans=slots.map(i=>tiles[i].ch).join(""),ok=ans===word;
+  results.push({word,ans,ok,secs:(performance.now()-wordStart)/1000});
+  phase="feedback";
+  $("verdict").textContent=ok?"Correct, well done!":"Not quite";
+  $("verdict").className="verdict "+(ok?"ok":"no");
+  const fs=$("fbSlots");fs.className="row slots "+(ok?"right":"wrong");
+  fs.innerHTML=(ok?word:ans).split("").map(c=>`<div class="tile">${esc(c)}</div>`).join("");
+  $("fbAnswer").innerHTML=ok?"":`The correct spelling is <b>${esc(word)}</b>`;
+  $("next").textContent=idx+1<round.length?"Next word":"See my results";
+  show("feedback");$("next").focus({preventScroll:true});
+  if(!ok&&cfg.sound)speak(word);
+}
+$("check").addEventListener("click",check);
+$("clear").addEventListener("click",()=>{slots.fill(null);render()});
+$("ready").addEventListener("click",toSpell);
+document.querySelectorAll(".listen").forEach(b=>b.addEventListener("click",()=>speak(word)));
+$("next").addEventListener("click",()=>{idx++;if(idx<round.length)nextWord();else finish()});
+$("start").addEventListener("click",start);
+$("again").addEventListener("click",start);
+$("change").addEventListener("click",()=>{$("results").classList.add("hidden");$("setup").classList.remove("hidden");phase="setup"});
+window.addEventListener("resize",()=>{if(phase==="spell"){sizeTiles()}});
+
+function finish(){
+  phase="results";$("play").classList.add("hidden");$("results").classList.remove("hidden");
+  const n=results.length,c=results.filter(r=>r.ok).length,pct=Math.round(c/n*100);
+  const time=results.reduce((a,r)=>a+r.secs,0);
+  const st=pct>=90?3:pct>=70?2:pct>=40?1:0;
+  const hist=store.get("sp-hist",[]);
+  const prevBest=Math.max(0,...hist.filter(h=>h.year===cfg.year).map(h=>h.pct));
+  const msg=pct===100?"Perfect score! Every word right.":pct>prevBest&&hist.some(h=>h.year===cfg.year)?"New best score, brilliant!":pct>=70?"Great spelling, well done!":pct>=40?"Good effort! Practise the words below and try again.":"Keep going! Practise the words below and you'll soon get them.";
+  $("cheer").innerHTML=stars(st)+" "+esc(msg);
+  hist.unshift({date:Date.now(),year:cfg.year,n,c,pct,time:Math.round(time)});store.set("sp-hist",hist.slice(0,20));
+  $("kpis").innerHTML=[["Score",`${c} / ${n}`,1],["Correct",pct+"%"],["Year","Year "+cfg.year],["Time spelling",fmtTime(time)],["Best for this year",Math.max(prevBest,pct)+"%"]].map(([l,v,h])=>`<div class="k${h?" hero":""}"><small>${l}</small><b>${esc(v)}</b></div>`).join("");
+  const wrong=results.filter(r=>!r.ok);
+  $("practiseWrap").classList.toggle("hidden",!wrong.length);
+  $("practise").innerHTML=wrong.map(r=>`<button data-w="${esc(r.word)}" aria-label="Hear ${esc(r.word)}">${SPK}${esc(r.word)}</button>`).join("");
+  $("practise").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>speak(b.dataset.w)));
+  $("answers").innerHTML=`<tr><th>Word</th><th>You spelt</th><th>Result</th><th class="num">Time</th></tr>`+results.map(r=>`<tr><td><b>${esc(r.word)}</b></td><td>${esc(r.ans)}</td><td class="${r.ok?"ok":"no"}">${r.ok?"Correct":"Try again"}</td><td class="num">${fmtTime(r.secs)}</td></tr>`).join("");
+  const h=store.get("sp-hist",[]);
+  $("hist").innerHTML=`<tr><th>When</th><th>Year</th><th class="num">Score</th><th class="num">Correct</th><th class="num">Time</th></tr>`+h.slice(0,10).map(x=>`<tr><td>${new Date(x.date).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>Year ${esc(x.year)}</td><td class="num">${x.c} / ${x.n}</td><td class="num">${x.pct}%</td><td class="num">${fmtTime(x.time)}</td></tr>`).join("");
+  $("again").focus({preventScroll:true});
+}
+applyCfg();
+}
+</script>
+</body>
+</html>
