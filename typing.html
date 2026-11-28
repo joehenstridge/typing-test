@@ -97,7 +97,8 @@ footer{margin-top:40px;color:var(--dim);font-size:13px}
   <nav class="site-nav" aria-label="Activities"><a href="typing.html" aria-current="page">Typing</a><a href="spelling.html">Spelling</a><a href="maths.html">Maths</a></nav>
 </header>
 <div class="wrap">
-<div class="thead">
+<button class="back" id="back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span id="backLabel">Home</span></button>
+  <div class="thead">
   <h1>Typing <span>test</span></h1>
   <p class="hint">Pick a level, then start typing to begin · <kbd>Tab</kbd> or <kbd>Esc</kbd> to restart</p>
 </div>
@@ -169,7 +170,7 @@ footer{margin-top:40px;color:var(--dim);font-size:13px}
   </div>
 </section>
 
-<footer>Words per minute counts only words typed fully correctly, at five letters per word. Raw counts every key pressed. Scores are saved only in this browser and never leave this device. · v8</footer>
+<footer>Words per minute counts only words typed fully correctly, at five letters per word. Raw counts every key pressed. Scores are saved only in this browser and never leave this device. · v10</footer>
 </div>
 
 <script src="assets/common.js"></script>
@@ -239,7 +240,7 @@ function reset(same){
   words=same&&lastWords?lastWords.slice():gen(120);
   typed=[""];wi=0;secs=[];secKeys=secErr=keysOk=keysBad=0;missed={};
   inp.value="";$("timer").textContent=fmt(cfg.dur);$("live").textContent="";
-  $("results").style.display="none";$("test").style.display="";
+  $("results").style.display="none";$("test").style.display="";$("backLabel").textContent="Home";
   caret.classList.remove("typing");
   renderAll();focus();
 }
@@ -336,7 +337,7 @@ function finish(){
   const best={};h.forEach(x=>{best[x.level+x.dur]=Math.max(best[x.level+x.dur]||0,x.wpm)});
   $("hist").innerHTML=`<tr><th>When</th><th>Level</th><th>Length</th><th>WPM</th><th>Raw</th><th>Accuracy</th><th>Consistency</th></tr>`+h.slice(0,10).map(x=>`<tr><td>${new Date(x.date).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${{starter:"Starter",explorer:"Explorer",challenge:"Challenge"}[x.level]||""}</td><td>${fmt(x.dur)}${x.dur<60?"s":""}</td><td class="${x.wpm===best[x.level+x.dur]?"pb":""}">${x.wpm}</td><td>${x.raw}</td><td>${x.acc}%</td><td>${x.cons}%</td></tr>`).join("");
   $("results").dataset.copy=`Typing test, ${cfg.level} level (${fmt(cfg.dur)}${cfg.dur<60?"s":""}): ${r.wpm} WPM, ${r.acc}% accuracy, raw ${r.raw}, consistency ${r.cons}%`;
-  $("test").style.display="none";$("results").style.display="block";
+  $("test").style.display="none";$("results").style.display="block";$("backLabel").textContent="Back to the test";
   draw();$("next").focus({preventScroll:true});
 }
 const svg=$("chart");
@@ -373,6 +374,7 @@ $("optPunct").addEventListener("click",()=>{cfg.punct=!cfg.punct;applyCfg();rese
 $("optNum").addEventListener("click",()=>{cfg.num=!cfg.num;applyCfg();reset(false)});
 document.querySelectorAll("[data-level]").forEach(b=>b.addEventListener("click",()=>{cfg.level=b.dataset.level;applyCfg();reset(false)}));
 $("restart").addEventListener("click",()=>reset(false));
+$("back").addEventListener("click",()=>{if(done)reset(false);else location.href="index.html"});
 $("next").addEventListener("click",()=>reset(false));
 $("repeat").addEventListener("click",()=>reset(true));
 $("copy").addEventListener("click",async e=>{try{await navigator.clipboard.writeText($("results").dataset.copy);e.target.textContent="Copied"}catch(err){e.target.textContent="Copy blocked"}setTimeout(()=>e.target.textContent="Copy result",1500)});

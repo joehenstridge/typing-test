@@ -9,17 +9,38 @@ window.App = (function () {
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-  // Speech: British English voice where the device has one.
+  // Speech: uses the voices built into the device. A chosen voice is remembered.
   const canSpeak = "speechSynthesis" in window;
+  const FEMALE = /sonia|libby|maisie|mia|hazel|susan|serena|kate|stephanie|martha|fiona|moira|tessa|karen|samantha|catherine|zira|aria|jenny|emma|female/i;
+  function allVoices() {
+    if (!canSpeak) return [];
+    let v = [];
+    try { v = speechSynthesis.getVoices().filter(x => /^en[-_]/i.test(x.lang) || x.lang === "en"); } catch (e) {}
+    const rank = x => (/GB/i.test(x.lang) ? 0 : /IE|AU|NZ/i.test(x.lang) ? 1 : 2) * 10 + (FEMALE.test(x.name) ? 0 : 1) + (/natural|enhanced|premium|online/i.test(x.name) ? -0.5 : 0);
+    return v.sort((p, q) => rank(p) - rank(q) || p.name.localeCompare(q.name));
+  }
+  function chosenVoice() {
+    const v = allVoices(), want = store.get("rsl-voice", "");
+    return v.find(x => x.voiceURI === want) || v[0] || null;
+  }
+  function voiceLabel(v) {
+    const region = { GB: "UK", US: "US", AU: "Australia", IE: "Ireland", IN: "India", NZ: "New Zealand", ZA: "South Africa", CA: "Canada" }[(v.lang.split(/[-_]/)[1] || "").toUpperCase()] || v.lang;
+    const natural = /natural|enhanced|premium/i.test(v.name);
+    let n = v.name.replace(/^(Microsoft|Google|Apple)\s+/, "").replace(/\s*-\s*English.*$/, "").replace(/\s*\(.*?\)/g, "").replace(/\s+Online$/, "").trim();
+    return n + (n.includes(region) ? "" : " (" + region + ")") + (natural ? ", natural" : "");
+  }
+  function onVoices(cb) {
+    if (!canSpeak) return cb([]);
+    cb(allVoices());
+    try { speechSynthesis.addEventListener("voiceschanged", () => cb(allVoices())); } catch (e) {}
+  }
   function speak(text, rate) {
     if (!canSpeak) return false;
     try {
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-GB"; u.rate = rate || 0.8;
-      const voices = speechSynthesis.getVoices();
-      const v = voices.find(v => v.lang === "en-GB") || voices.find(v => /^en/.test(v.lang));
-      if (v) u.voice = v;
+      const u = new SpeechSynthesisUtterance(text), v = chosenVoice();
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-GB";
+      u.rate = rate || store.get("rsl-rate", 0.85);
       speechSynthesis.speak(u);
       return true;
     } catch (e) { return false; }
@@ -47,5 +68,5 @@ window.App = (function () {
     paint(); nav.appendChild(b);
   }
   themeButton();
-  return { store, esc, rnd, pick, shuffle, speak, canSpeak, stars, chips, press, fmtTime };
+  return { store, esc, rnd, pick, shuffle, speak, canSpeak, allVoices, chosenVoice, voiceLabel, onVoices, stars, chips, press, fmtTime };
 })();

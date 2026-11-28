@@ -15,8 +15,10 @@
 .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:10px;font-weight:600}
 .bar .score{color:var(--acc)}
 .stage{background:var(--cap);border-radius:20px;padding:clamp(18px,4vw,36px);margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:clamp(18px,4vw,40px);align-items:center}
-.q{font:800 clamp(40px,8vw,76px)/1.1 Archivo,sans-serif;letter-spacing:-.01em;white-space:nowrap;overflow-wrap:normal}
-.q .op{color:var(--acc);padding:0 .12em}
+.q{font:800 clamp(34px,6vw,64px)/1.15 Archivo,sans-serif;letter-spacing:-.01em}
+.q .op{color:var(--acc);padding:0 .15em}
+.q .n{white-space:nowrap}
+.eq{display:flex;flex-wrap:wrap;align-items:baseline;row-gap:4px}
 .ansrow{display:flex;align-items:center;gap:12px;margin-top:18px}
 #ans{font:800 clamp(34px,6vw,56px) Archivo,sans-serif;width:100%;max-width:340px;min-height:76px;padding:4px 16px;border-radius:14px;border:3px solid var(--cap2);background:var(--bg);color:var(--ink);text-align:center}
 #ans:focus{border-color:var(--acc);outline:none}
@@ -34,7 +36,7 @@
 .r .track{height:14px;border-radius:7px;background:var(--cap);overflow:hidden}
 .r .track i{display:block;height:100%;background:var(--acc)}
 .r span:last-child{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
-@media(max-width:700px){.stage{grid-template-columns:minmax(0,1fr)}.q,.ansrow{text-align:center;justify-content:center}.r{grid-template-columns:100px minmax(0,1fr) 60px}}
+@media(max-width:700px){.stage{grid-template-columns:minmax(0,1fr)}.q,.ansrow{text-align:center;justify-content:center}.eq{justify-content:center}.r{grid-template-columns:100px minmax(0,1fr) 60px}}
 </style>
 </head>
 <body data-sec="maths">
@@ -43,6 +45,7 @@
   <nav class="site-nav" aria-label="Activities"><a href="typing.html">Typing</a><a href="spelling.html">Spelling</a><a href="maths.html" aria-current="page">Maths</a></nav>
 </header>
 <main class="wrap">
+  <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span id="backLabel">Home</span></button>
   <h1>Maths <span>test</span></h1>
   <p class="lede">Choose your year and what to practise. Answer each question, then see how you did.</p>
 
@@ -68,10 +71,8 @@
     <div class="progress"><i id="prog"></i></div>
     <div class="stage" id="stage">
       <div>
-        <div class="q" id="q" aria-live="polite"></div>
-        <form class="ansrow" id="form" autocomplete="off">
-          <input id="ans" inputmode="numeric" aria-label="Your answer" maxlength="9">
-        </form>
+        <form id="form" autocomplete="off"><div class="q" id="q" aria-live="polite"></div></form>
+        <input id="ans" inputmode="numeric" aria-label="Your answer" maxlength="9">
         <div class="fb" id="fb" aria-live="assertive"></div>
       </div>
       <div class="pad" id="pad">
@@ -97,7 +98,7 @@
     </div>
   </section>
 </main>
-<footer class="site-foot">Questions are matched to what each year group learns in the national curriculum. Scores are saved only on this device. · v8</footer>
+<footer class="site-foot">Questions are matched to what each year group learns in the national curriculum. Scores are saved only on this device. · v10</footer>
 
 <script src="assets/common.js"></script>
 <script>
@@ -107,14 +108,14 @@ const $=id=>document.getElementById(id);
 const OPS={add:{sym:"+",name:"Adding"},sub:{sym:"−",name:"Taking away"},mul:{sym:"×",name:"Times"},div:{sym:"÷",name:"Dividing"}};
 const DEFAULT_TABLES={"2":[2,5,10],"3":[2,3,4,5,8,10],"4":[2,3,4,5,6,7,8,9,10,11,12],"5":[2,3,4,5,6,7,8,9,10,11,12],"6":[2,3,4,5,6,7,8,9,10,11,12]};
 const NOTES={
-"2":"Year 2: adding and taking away with numbers up to 100, and the 2, 5 and 10 times tables.",
-"3":"Year 3: adding and taking away with 3-digit numbers, and the 3, 4 and 8 times tables too.",
-"4":"Year 4: 4-digit adding and taking away, all times tables up to 12 × 12, and 2-digit × 1-digit.",
-"5":"Year 5: bigger numbers, multiplying by 10, 100 and 1,000, and dividing 3-digit numbers.",
-"6":"Year 6: large numbers, 2-digit × 2-digit, and dividing by 2-digit numbers. Have some paper ready."};
+"2":"Year 2: number bonds to 20, adding and taking away ones and tens with numbers up to 100, and the 2, 5 and 10 times tables.",
+"3":"Year 3: adding two 2-digit numbers, adding ones, tens or hundreds to a 3-digit number, and the 3, 4 and 8 times tables too.",
+"4":"Year 4: bigger 2-digit sums, multiples of 10 and 100, adding 9 or 99, and all times tables up to 12 × 12.",
+"5":"Year 5: mental adding and taking away with hundreds and near-hundreds, and quick recall of every times table up to 12 × 12.",
+"6":"Year 6: rounding-friendly sums with thousands and hundreds, adjusting by 99 or 999, and mixed times tables and division facts up to 12 × 12."};
 const cfg=Object.assign({year:"2",ops:["add","sub","mul","div"],count:10,tables:null},store.get("mt-cfg",{}));
 if(!cfg.tables||!cfg.tables.length)cfg.tables=DEFAULT_TABLES[cfg.year].slice();
-let qs=[],qi=0,answers=[],busy=false,t0=0,clock=null,qStart=0;
+let qs=[],qi=0,answers=[],busy=false,t0=0,clock=null,qStart=0,nextT=null,stage="setup";
 
 $("tables").innerHTML=[2,3,4,5,6,7,8,9,10,11,12].map(t=>`<button class="chip" data-t="${t}">${t}</button>`).join("");
 function applyCfg(){
@@ -129,29 +130,42 @@ chips("[data-t]",b=>{const t=+b.dataset.t;cfg.tables=cfg.tables.includes(t)?cfg.
 chips("[data-count]",b=>{cfg.count=+b.dataset.count;applyCfg()});
 
 // Question generators, by year group. Every answer is a whole number of zero or more.
+// Mental arithmetic only: every question is meant to be worked out in your head.
+// Multiplying and dividing never go beyond the 12 times table.
 function addPair(y){
-  if(y==="2"){const k=rnd(0,2);if(k===0){const a=rnd(10,89);return[a,rnd(1,Math.min(9,99-a))]}if(k===1){const a=rnd(1,8)*10+rnd(0,9);return[a,rnd(1,9-Math.floor(a/10))*10]}const a=rnd(11,60);return[a,rnd(11,99-a)]}
-  if(y==="3"){const a=rnd(100,899),b=pick([rnd(1,9),rnd(1,9)*10,rnd(1,8)*100,rnd(11,99),rnd(101,399)]);return a+b<1000?[a,b]:[a,rnd(1,9)]}
-  if(y==="4"){const a=rnd(1000,6999);return[a,pick([rnd(100,999),rnd(1000,2999)])]}
-  if(y==="5"){const a=rnd(10000,69999);return[a,pick([rnd(1000,9999),rnd(10000,29999)])]}
-  const a=rnd(100000,699999);return[a,pick([rnd(10000,99999),rnd(100000,299999)])];
+  const k=rnd(0,3);
+  if(y==="2"){
+    if(k===0){const a=rnd(2,12);return[a,rnd(1,20-a)]}
+    if(k===1){const a=rnd(10,89),u=a%10;return[a,rnd(1,Math.max(1,9-u))]}
+    if(k===2){const a=rnd(10,79);return[a,rnd(1,Math.floor((99-a)/10))*10]}
+    const t=rnd(1,8);return[t*10,rnd(1,9-t)*10];
+  }
+  if(y==="3"){
+    if(k===0){const a=rnd(11,70);return[a,rnd(11,99-a)]}
+    if(k===1){const a=rnd(100,989);return[a,rnd(1,9)]}
+    if(k===2){const a=rnd(100,899);return[a,rnd(1,9)*10]}
+    const a=rnd(100,899);return[a,rnd(1,Math.floor((999-a)/100))*100];
+  }
+  if(y==="4"){
+    if(k===0)return[rnd(15,99),rnd(15,99)];
+    if(k===1)return[rnd(10,90)*10,rnd(10,90)*10];
+    if(k===2)return[rnd(100,800),pick([9,19,29,39,11,21,99])];
+    return[rnd(1,8)*1000,rnd(1,9)*100];
+  }
+  if(y==="5"){
+    if(k===0){const a=rnd(100,799);return[a,rnd(1,Math.floor((999-a)/100))*100]}
+    if(k===1)return[rnd(25,99),rnd(25,99)];
+    if(k===2)return[rnd(100,800),pick([99,199,98,101,49])];
+    return[rnd(11,89)*100,rnd(1,9)*100];
+  }
+  if(k===0)return[rnd(10,80)*100,rnd(10,40)*100];
+  if(k===1)return[rnd(20,120)*5,rnd(20,80)*5];
+  if(k===2)return[rnd(1000,8000),pick([999,99,1001,199,101])];
+  return[rnd(35,99),rnd(35,99)];
 }
 function fact(){const t=pick(cfg.tables),b=rnd(1,12);return Math.random()<.5?[t,b]:[b,t]}
-function mulPair(y){
-  const r=Math.random();
-  if(y==="2"||y==="3")return fact();
-  if(y==="4")return r<.7?fact():[rnd(11,49),rnd(2,9)];
-  if(y==="5")return r<.4?fact():r<.7?[rnd(12,99),rnd(2,9)]:r<.85?[rnd(101,499),rnd(2,9)]:[rnd(2,99),pick([10,100,1000])];
-  return r<.3?fact():r<.7?[rnd(11,39),rnd(11,29)]:r<.85?[rnd(101,999),rnd(2,9)]:[rnd(11,999),pick([10,100,1000])];
-}
-function divPair(y){
-  const r=Math.random(),f=()=>{const t=pick(cfg.tables),b=rnd(1,12);return[t*b,t]};
-  if(y==="2"||y==="3")return f();
-  if(y==="4"){if(r<.75)return f();const d=rnd(2,9);return[rnd(11,30)*d,d]}
-  if(y==="5"){if(r<.4)return f();const d=rnd(2,9);return[rnd(12,Math.floor(999/d))*d,d]}
-  if(r<.3)return f();if(r<.7){const d=rnd(2,9);return[rnd(12,Math.floor(999/d))*d,d]}
-  const d=rnd(11,25);return[rnd(12,99)*d,d];
-}
+function mulPair(){return fact()}
+function divPair(){const t=pick(cfg.tables),b=rnd(1,12);return[t*b,t]}
 function make(op){
   const y=cfg.year;let a,b,ans;
   if(op==="add"){[a,b]=addPair(y);ans=a+b}
@@ -170,11 +184,13 @@ function start(){
   $("setup").classList.add("hidden");$("results").classList.add("hidden");$("play").classList.remove("hidden");
   $("ans").setAttribute("inputmode",matchMedia("(pointer:coarse)").matches?"none":"numeric");
   t0=performance.now();clearInterval(clock);clock=setInterval(()=>{$("clock").textContent=fmtTime((performance.now()-t0)/1000)},500);
-  ask();
+  stage="play";updateBack();ask();
 }
 function ask(){
   const q=qs[qi];busy=false;
-  $("q").innerHTML=`${fmt(q.a)}<span class="op">${OPS[q.op].sym}</span>${fmt(q.b)} =`;
+  const ansEl=$("ans");
+  $("q").innerHTML=`<div class="eq"><span class="n">${fmt(q.a)}</span><span class="op">${OPS[q.op].sym}</span><span class="n">${fmt(q.b)}</span><span class="op">=</span></div><div class="ansrow" id="ansSlot"></div>`;
+  $("ansSlot").appendChild(ansEl);
   $("q").setAttribute("aria-label",`What is ${qText(q).replace("−","minus").replace("×","times").replace("÷","divided by")}?`);
   $("count").textContent=`Question ${qi+1} of ${qs.length}`;
   $("score").textContent=`${answers.filter(a=>a.ok).length} correct`;
@@ -190,7 +206,7 @@ function submit(){
   $("stage").className="stage "+(ok?"right":"wrong");
   $("fb").className="fb "+(ok?"ok":"no");
   $("fb").textContent=ok?pick(["Correct!","Brilliant!","Spot on!","Well done!"]):`Not quite. ${qText(q)} = ${fmt(q.ans)}`;
-  setTimeout(()=>{qi++;qi<qs.length?ask():finish()},ok?700:2200);
+  nextT=setTimeout(()=>{qi++;qi<qs.length?ask():finish()},ok?700:2200);
 }
 $("form").addEventListener("submit",e=>{e.preventDefault();submit()});
 $("ans").addEventListener("input",e=>{e.target.value=e.target.value.replace(/[^\d,]/g,"")});
@@ -200,10 +216,16 @@ $("pad").addEventListener("click",e=>{
 });
 $("start").addEventListener("click",start);
 $("again").addEventListener("click",start);
-$("change").addEventListener("click",()=>{$("results").classList.add("hidden");$("setup").classList.remove("hidden")});
+function toSetup(){
+  clearTimeout(nextT);clearInterval(clock);busy=false;stage="setup";
+  $("play").classList.add("hidden");$("results").classList.add("hidden");$("setup").classList.remove("hidden");updateBack();
+}
+function updateBack(){$("backLabel").textContent=stage==="setup"?"Home":"Back to settings"}
+$("change").addEventListener("click",toSetup);
+$("back").addEventListener("click",()=>{if(stage==="setup")location.href="index.html";else toSetup()});
 
 function finish(){
-  clearInterval(clock);const time=(performance.now()-t0)/1000;
+  clearInterval(clock);stage="results";updateBack();const time=(performance.now()-t0)/1000;
   $("play").classList.add("hidden");$("results").classList.remove("hidden");
   const n=answers.length,c=answers.filter(a=>a.ok).length,pct=Math.round(c/n*100);
   const hist=store.get("mt-hist",[]);

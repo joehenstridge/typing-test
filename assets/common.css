@@ -64,3 +64,8 @@ td.num,th.num{text-align:right;white-space:nowrap}
 .hidden{display:none!important}
 .site-foot{max-width:1040px;margin:0 auto;padding:10px max(5vw,16px) 36px;color:var(--dim);font-size:13px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.back{display:inline-flex;align-items:center;gap:6px;font:600 15px Archivo,sans-serif;min-height:44px;padding:0 14px 0 10px;margin:0 0 14px -4px;border-radius:10px;border:1px solid var(--cap2);border-bottom-width:3px;background:var(--bg);color:var(--ink);cursor:pointer;text-decoration:none}
+.back svg{width:18px;height:18px}
+.back:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.sel{font:600 15px Archivo,sans-serif;min-height:44px;padding:0 36px 0 12px;border-radius:10px;border:1px solid var(--cap2);border-bottom-width:3px;background:var(--bg);color:var(--ink);max-width:100%}
+.sel:focus-visible{outline:3px solid var(--acc);outline-offset:2px}

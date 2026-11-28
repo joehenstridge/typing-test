@@ -49,6 +49,7 @@
   <nav class="site-nav" aria-label="Activities"><a href="typing.html">Typing</a><a href="spelling.html" aria-current="page">Spelling</a><a href="maths.html">Maths</a></nav>
 </header>
 <main class="wrap">
+  <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span id="backLabel">Home</span></button>
   <h1>Spelling <span>test</span></h1>
   <p class="lede">Look at the word and listen. When it disappears, put the letters in the right order.</p>
 
@@ -64,6 +65,8 @@
         <button class="chip" data-show="3">3s</button><button class="chip" data-show="5">5s</button><button class="chip" data-show="8">8s</button>
       </div>
       <div class="grp"><b>Sound</b><button class="chip" id="sound">Read words aloud</button></div>
+      <div class="grp" id="voiceGrp"><b>Voice</b><select class="sel" id="voice" aria-label="Choose a voice"></select><button class="chip" id="testVoice" type="button">Test</button></div>
+      <div class="grp" id="rateGrp" role="group" aria-label="Speaking speed"><b>Speed</b><button class="chip" data-rate="0.7">Slow</button><button class="chip" data-rate="0.85">Normal</button><button class="chip" data-rate="1">Quick</button></div>
     </div>
     <p class="lede" id="yearNote"></p>
     <button class="btn pri" id="start">Start spelling</button>
@@ -117,12 +120,12 @@
     </div>
   </section>
 </main>
-<footer class="site-foot">Words come from the English national curriculum spelling lists for each year group. Scores are saved only on this device. · v8</footer>
+<footer class="site-foot">Words come from the English national curriculum spelling lists for each year group. Scores are saved only on this device. · v10</footer>
 
 <script src="assets/common.js"></script>
 <script>
 {
-const {store,esc,shuffle,speak,canSpeak,stars,chips,press,fmtTime}=App;
+const {store,esc,shuffle,speak,canSpeak,stars,chips,press,fmtTime,onVoices,chosenVoice,voiceLabel}=App;
 const WORDS={"2": ["door", "floor", "poor", "because", "find", "kind", "mind", "behind", "child", "children", "wild", "climb", "most", "only", "both", "old", "cold", "gold", "hold", "told", "every", "everybody", "even", "great", "break", "steak", "pretty", "beautiful", "after", "fast", "last", "past", "father", "class", "grass", "pass", "plant", "path", "bath", "hour", "move", "prove", "improve", "sure", "sugar", "eye", "could", "should", "would", "who", "whole", "any", "many", "clothes", "busy", "people", "water", "again", "half", "money", "parents"], "3": ["busy", "build", "early", "earth", "eight", "fruit", "group", "guard", "guide", "heard", "heart", "learn", "often", "reign", "woman", "women", "actual", "answer", "appear", "arrive", "breath", "caught", "centre", "circle", "decide", "eighth", "enough", "famous", "height", "island", "length", "minute", "notice", "recent", "though", "weight", "address", "believe", "bicycle", "breathe", "century", "certain", "extreme", "forward", "grammar", "history", "imagine", "library", "mention", "natural", "naughty", "perhaps", "popular", "possess"], "4": ["promise", "purpose", "quarter", "regular", "special", "strange", "suppose", "thought", "through", "various", "accident", "actually", "although", "business", "calendar", "complete", "consider", "continue", "describe", "exercise", "forwards", "increase", "interest", "material", "medicine", "occasion", "opposite", "ordinary", "peculiar", "position", "possible", "potatoes", "pressure", "probably", "question", "remember", "sentence", "separate", "straight", "strength", "surprise", "different", "difficult", "disappear", "favourite", "important", "knowledge", "therefore", "experience", "experiment", "particular", "possession", "accidentally", "occasionally"], "5": ["equip", "forty", "occur", "queue", "rhyme", "yacht", "bruise", "harass", "muscle", "occupy", "rhythm", "symbol", "system", "achieve", "amateur", "ancient", "average", "awkward", "bargain", "develop", "foreign", "leisure", "sincere", "soldier", "stomach", "suggest", "twelfth", "variety", "vehicle", "apparent", "attached", "category", "cemetery", "definite", "equipped", "familiar", "identity", "language", "nuisance", "persuade", "physical", "relevant", "shoulder", "thorough", "accompany", "according", "available", "committee", "community", "conscious", "criticise", "curiosity"], "6": ["desperate", "embarrass", "equipment", "excellent", "existence", "guarantee", "hindrance", "immediate", "interfere", "interrupt", "lightning", "necessary", "neighbour", "prejudice", "privilege", "programme", "recognise", "recommend", "sacrifice", "secretary", "signature", "sincerely", "vegetable", "aggressive", "appreciate", "conscience", "correspond", "determined", "dictionary", "disastrous", "especially", "exaggerate", "frequently", "government", "individual", "marvellous", "parliament", "profession", "restaurant", "sufficient", "accommodate", "communicate", "competition", "controversy", "convenience", "environment", "explanation", "immediately", "mischievous", "opportunity", "temperature", "pronunciation"]};
 const NOTES={"2":"Year 2 common exception words, like because, beautiful and people.","3":"Shorter words from the Year 3 and 4 list, like build, heard and island.","4":"Longer words from the Year 3 and 4 list, like believe, February and therefore.","5":"Shorter words from the Year 5 and 6 list, like queue, muscle and rhythm.","6":"Longer words from the Year 5 and 6 list, like embarrass, necessary and pronunciation."};
 const EXTRA={"2":0,"3":0,"4":1,"5":2,"6":2};
@@ -142,6 +145,18 @@ chips("[data-year]",b=>{cfg.year=b.dataset.year;applyCfg()});
 chips("[data-count]",b=>{cfg.count=+b.dataset.count;applyCfg()});
 chips("[data-show]",b=>{cfg.show=+b.dataset.show;applyCfg()});
 $("sound").addEventListener("click",()=>{cfg.sound=!cfg.sound;applyCfg()});
+// Voice picker: lists the English voices this device has, UK voices first.
+onVoices(list=>{
+  const sel=$("voice");
+  $("voiceGrp").classList.toggle("hidden",!list.length);$("rateGrp").classList.toggle("hidden",!canSpeak);
+  if(!list.length)return;
+  sel.innerHTML=list.map(v=>`<option value="${esc(v.voiceURI)}">${esc(voiceLabel(v))}</option>`).join("");
+  const c=chosenVoice();if(c)sel.value=c.voiceURI;
+});
+$("voice").addEventListener("change",e=>{store.set("rsl-voice",e.target.value);speak("because")});
+$("testVoice").addEventListener("click",()=>speak("Let's practise spelling. because"));
+press("[data-rate]",b=>+b.dataset.rate===store.get("rsl-rate",0.85));
+chips("[data-rate]",b=>{store.set("rsl-rate",+b.dataset.rate);press("[data-rate]",x=>x===b);speak("beautiful")});
 
 function pickWords(n){
   const key="sp-deck-"+cfg.year,all=WORDS[cfg.year],out=[];
@@ -155,7 +170,7 @@ function say(){if(cfg.sound)speak(word)}
 function start(){
   round=pickWords(cfg.count);idx=0;results=[];
   $("setup").classList.add("hidden");$("results").classList.add("hidden");$("play").classList.remove("hidden");
-  nextWord();
+  nextWord();updateBack();
 }
 function nextWord(){
   word=round[idx];phase="look";
@@ -272,11 +287,18 @@ document.querySelectorAll(".listen").forEach(b=>b.addEventListener("click",()=>s
 $("next").addEventListener("click",()=>{idx++;if(idx<round.length)nextWord();else finish()});
 $("start").addEventListener("click",start);
 $("again").addEventListener("click",start);
-$("change").addEventListener("click",()=>{$("results").classList.add("hidden");$("setup").classList.remove("hidden");phase="setup"});
+function toSetup(){
+  clearTimeout(lookTimer);if(canSpeak)try{speechSynthesis.cancel()}catch(e){}
+  if(drag&&drag.ghost)drag.ghost.remove();drag=null;
+  phase="setup";$("play").classList.add("hidden");$("results").classList.add("hidden");$("setup").classList.remove("hidden");updateBack();
+}
+function updateBack(){$("backLabel").textContent=phase==="setup"?"Home":"Back to settings"}
+$("change").addEventListener("click",toSetup);
+$("back").addEventListener("click",()=>{if(phase==="setup")location.href="index.html";else toSetup()});
 window.addEventListener("resize",()=>{if(phase==="spell"){sizeTiles()}});
 
 function finish(){
-  phase="results";$("play").classList.add("hidden");$("results").classList.remove("hidden");
+  phase="results";updateBack();$("play").classList.add("hidden");$("results").classList.remove("hidden");
   const n=results.length,c=results.filter(r=>r.ok).length,pct=Math.round(c/n*100);
   const time=results.reduce((a,r)=>a+r.secs,0);
   const st=pct>=90?3:pct>=70?2:pct>=40?1:0;
